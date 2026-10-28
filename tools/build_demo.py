@@ -7,13 +7,13 @@ Uso:
   python3 tools/build_demo.py \
       --pptx  "1. LAYOUT_QUIMICOS_ENVASE_L1_11-2025.pptx" \
       --sga   "ETIQUETAS_FORMATO_SGA.pdf" \
-      --plano-l1 plano_L1.webp --plano-l2 plano_L2.webp \
+      --plano-l1 plano_L1.webp --plano-l2 plano_L2.webp --fotos Ligeras/ \
       --out demo/demo-data.js
 
 Requiere: python-pptx, Pillow y poppler-utils (pdftoppm / pdftotext).
 """
 import argparse, base64, io, json, re, subprocess, tempfile, os
-from PIL import Image
+from PIL import Image, ImageOps
 from pptx import Presentation
 
 # ---------------------------------------------------------------------------
@@ -30,14 +30,14 @@ CHEMICALS = [
     ("rimazon_oxo",   "RIMAZON OXO",                "#0070C0", "#000000", [22]),
     ("rimazon_sauer", "RIMAZON SAUER",              "#FF0000", "#000000", [21]),
     ("dicolube",      "DICOLUBE CR",                "#00B050", "#000000", [1]),
-    ("dryexx",        "DRYEXX GF",                  "#00B050", "#000000", []),
     ("su221",         "SU 221",                     "#0070C0", "#00B050", [2]),
-    ("stabilon",      "STABILON ACI",               "#0070C0", "#00B050", [20]),
+    ("divobrite",     "DIVOBRITE",                  "#0070C0", "#00B050", []),
     ("soda",          "SODA CÁUSTICA",              "#7030A0", "#7030A0", [5, 6, 7, 8, 9, 10, 11]),
     ("acido_nitrico", "ÁCIDO NÍTRICO",              "#000000", "#FF0000", [23, 24, 25, 26, 27]),
     ("alcohol",       "ALCOHOL",                    "#00B0F0", "#00B0F0", []),
     ("dcitrus",       "D-CITRUS",                   "#FFFF00", "#000000", [3]),
     # Presentes en el PDF de etiquetas pero sin ubicacion en los mapas actuales
+    ("stabilon",      "STABILON ACI",               "#0070C0", "#00B050", [20]),
     ("amoniaco",      "AMONIACO",                   "#FFFFFF", "#7F7F7F", [4]),
     ("fibra_soda",    "FIBRA HÚMEDA CON RESIDUOS DE SODA", "#C9A3E6", "#7030A0", [12]),
     ("sc2000",        "SC-2000",                    "#FFFFFF", "#ED7D31", [28]),
@@ -52,7 +52,8 @@ CHEMICALS = [
 # Mapas. Coordenadas en pixeles del plano original (2000 x 1415). Pueden ser
 # negativas: el plano se amplia con margen blanco para ubicar zonas externas
 # (tanques, barrilera, cuartos), igual que en el layout del PowerPoint.
-# area: (id, nombre, descripcion, rect x0,y0,x1,y1, [diapositivas de fotos],
+# area: (id, nombre, descripcion, rect x0,y0,x1,y1,
+#        [fotos: numero de diapositiva del PPTX o nombre de archivo en --fotos],
 #        [(quimico, x, y), ...])
 # ---------------------------------------------------------------------------
 L1 = dict(
@@ -92,23 +93,26 @@ L2 = dict(
     plano="plano_l2",
     areas=[
         ("tanques_cip", "Tanques CIP (soda / ácido nítrico)", "Tanques de soda cáustica y ácido nítrico.",
-         (60, 95, 340, 200), [], [("acido_nitrico", 110, 148), ("soda", 170, 148), ("soda", 230, 148), ("acido_nitrico", 290, 148)]),
-        ("cuarto_lubricante", "Cuarto de lubricante", "Lubricante de cadenas Dryexx GF.",
-         (-215, 430, -15, 650), [], [("dryexx", -115, 560)]),
+         (60, 95, 340, 200), ["IMG_20261028_101024.jpg", "IMG_20261028_101210.jpg"], [("acido_nitrico", 110, 148), ("soda", 170, 148), ("soda", 230, 148), ("acido_nitrico", 290, 148)]),
+        ("cuarto_lubricante", "Cuarto de lubricante", "Lubricante de cadenas Dicolube CR.",
+         (-215, 430, -15, 650), ["IMG_20261028_100413.jpg"], [("dicolube", -115, 560)]),
+        ("kit_antiderrame", "Kit antiderrame", "Kit de control de derrames (absorbentes y EPP).",
+         (-200, 690, -30, 800), ["IMG_20261028_100535.jpg", "IMG_20261028_100638.jpg"], []),
         ("estacion_limpieza", "Estación de limpieza (Topax / Oxonia)", "Estación de dosificación de productos de limpieza y desinfección.",
-         (70, 565, 155, 665), [], [("topax66", 92, 595), ("topax58", 132, 595), ("topax32", 92, 635), ("oxonia", 132, 635)]),
-        ("punto_limpieza_llenadora", "Punto de limpieza llenadora", "Topax 66 y alcohol para limpieza de la llenadora.",
-         (60, 915, 185, 1040), [], [("topax66", 122, 955), ("alcohol", 122, 1000)]),
+         (70, 565, 155, 665), ["IMG_20261028_100817.jpg", "IMG_20261028_100854_1.jpg"], [("topax66", 92, 595), ("topax58", 132, 595), ("topax32", 92, 635), ("oxonia", 132, 635)]),
+        ("punto_limpieza_llenadora", "Punto de limpieza llenadora", "Topax 66, alcohol y Dicolube CR.",
+         (60, 915, 185, 1040), ["IMG_20261028_100212.jpg", "IMG_20261028_100219.jpg", "IMG_20261028_100440.jpg"],
+         [("topax66", 105, 955), ("alcohol", 105, 1000), ("dicolube", 150, 978)]),
         ("etiquetadora", "Etiquetadora", "Goma para etiquetas.",
-         (-5, 1045, 175, 1205), [], [("goma", 155, 1065), ("goma", 155, 1185)]),
+         (-5, 1045, 175, 1205), ["IMG_20261028_100102.jpg", "IMG_20261028_100119.jpg"], [("goma", 155, 1065), ("goma", 155, 1185)]),
         ("dioxido_cloro", "Generador de dióxido de cloro", "Precursores Rimazon Oxo y Rimazon Sauer.",
-         (480, 790, 595, 890), [], [("rimazon_oxo", 538, 822), ("rimazon_sauer", 538, 860)]),
-        ("lubricante_cadenas", "Lubricante de cadenas", "Dosificación de Dryexx GF.",
-         (1040, 912, 1185, 992), [], [("dryexx", 1112, 952)]),
-        ("dosificacion_lavadora", "Dosificación lavadora", "Stabilon, soda cáustica y Topax 66.",
-         (465, 235, 645, 330), [], [("stabilon", 510, 282), ("soda", 555, 282), ("topax66", 600, 282)]),
+         (480, 790, 595, 890), ["IMG_20261028_101814.jpg", "IMG_20261028_101824.jpg"], [("rimazon_oxo", 538, 822), ("rimazon_sauer", 538, 860)]),
+        ("lubricante_cadenas", "Lubricante de cadenas", "Dosificación de Dicolube CR.",
+         (1040, 912, 1185, 992), ["IMG_20261028_101604.jpg"], [("dicolube", 1112, 952)]),
+        ("dosificacion_lavadora", "Dosificación lavadora", "Divobrite, soda cáustica y Topax 66.",
+         (465, 235, 645, 330), ["IMG_20261028_101247.jpg", "IMG_20261028_101355.jpg"], [("divobrite", 510, 282), ("soda", 555, 282), ("topax66", 600, 282)]),
         ("cuarto_mp_l2", "Cuarto de materia prima L2", "Almacenamiento de productos químicos de la línea 2.",
-         (925, 1320, 1075, 1500), [],
+         (925, 1320, 1075, 1500), ["IMG_20261028_095857.jpg", "IMG_20261028_095843.jpg"],
          [("goma", 980, 1345), ("acido_nitrico", 980, 1380), ("rimazon_sauer", 1020, 1380),
           ("oxonia", 980, 1415), ("topax32", 1020, 1415), ("topax58", 980, 1450), ("topax66", 1020, 1450),
           ("dcitrus", 980, 1485), ("rimazon_oxo", 1020, 1485)]),
@@ -203,7 +207,15 @@ def slide_photos(prs, slide_no):
 
 
 # ----------------------------- mapas ---------------------------------------
-def build_map(cfg, plano_path, prs, assets, used):
+def find_photo(photo_dir, name):
+    """Busca una foto por nombre dentro de la carpeta (y subcarpetas)."""
+    for root, _, files in os.walk(photo_dir or "."):
+        if name in files:
+            return os.path.join(root, name)
+    raise SystemExit(f"No se encontró la foto {name} en {photo_dir}")
+
+
+def build_map(cfg, plano_path, prs, assets, used, photo_dir=None):
     base = Image.open(plano_path).convert("RGB")
     W, H = base.size
     xs, ys = [0, W], [0, H]
@@ -232,11 +244,16 @@ def build_map(cfg, plano_path, prs, assets, used):
     mid = 0
     for (a_id, name, desc, (x0, y0, x1, y1), slides, items) in cfg["areas"]:
         photos = []
+        imgs = []
         for s in slides:
-            for k, img in enumerate(slide_photos(prs, s)):
-                pid = f"{cfg['id']}_{a_id}_{k}"
-                assets[pid] = data_url(fit(img, 1600), quality=68)
-                photos.append(dict(img=pid, pins=[]))
+            if isinstance(s, int):
+                imgs += slide_photos(prs, s)
+            else:
+                imgs.append(ImageOps.exif_transpose(Image.open(find_photo(photo_dir, s))).convert("RGB"))
+        for k, img in enumerate(imgs):
+            pid = f"{cfg['id']}_{a_id}_{k}"
+            assets[pid] = data_url(fit(img, 1600), quality=68)
+            photos.append(dict(img=pid, pins=[]))
         chems = []
         for c, x, y in items:
             mid += 1
@@ -263,6 +280,7 @@ def main():
     ap.add_argument("--sga", required=True)
     ap.add_argument("--plano-l1", required=True)
     ap.add_argument("--plano-l2", required=True)
+    ap.add_argument("--fotos", help="carpeta con las fotos de las áreas (p. ej. fotos de L2)")
     ap.add_argument("--out", default="demo/demo-data.js")
     a = ap.parse_args()
 
@@ -270,7 +288,7 @@ def main():
     prs = Presentation(a.pptx)
     fichas = build_fichas(a.sga, assets)
     used = set()
-    maps = [build_map(L1, a.plano_l1, prs, assets, used), build_map(L2, a.plano_l2, prs, assets, used)]
+    maps = [build_map(L1, a.plano_l1, prs, assets, used), build_map(L2, a.plano_l2, prs, assets, used, a.fotos)]
     chems = []
     for cid, name, fill, ring, pages in CHEMICALS:
         chems.append(dict(id=cid, name=name, fill=fill, ring=ring,

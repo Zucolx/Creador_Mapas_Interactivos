@@ -18,7 +18,7 @@ En el teléfono se puede pellizcar para ampliar, arrastrar para moverse, y el bo
 | Archivo | Contenido |
 |---|---|
 | `exportados/Mapa_Linea_1.html` | Mapa interactivo L1 (8 áreas con foto) |
-| `exportados/Mapa_Linea_2.html` | Mapa interactivo L2 (9 áreas, fotos pendientes) |
+| `exportados/Mapa_Linea_2.html` | Mapa interactivo L2 (10 áreas con foto, incluido el kit antiderrame) |
 | `exportados/Mapas_de_sustancias_quimicas_Envase.html` | L1 y L2 en un solo archivo, con selector |
 
 ## Manual de usuario
@@ -40,8 +40,8 @@ Abre `index.html` en Chrome, Edge o Firefox (doble clic basta; también funciona
 
 ## Pendientes del ejemplo
 
-- **Fotos de Línea 2**: las 9 áreas se muestran como «Foto pendiente». Se agregan desde el editor (área → *Agregar fotos…*) y se vuelve a exportar.
-- **Fichas sin etiqueta en el PDF**: ALCOHOL y DRYEXX GF muestran «Ficha pendiente».
+- **Fichas sin etiqueta en el PDF**: ALCOHOL y DIVOBRITE muestran «Ficha pendiente».
+- **Ubicación del kit antiderrame (L2)**: se colocó de forma aproximada en el lado izquierdo del plano; conviene confirmarla.
 - Los nombres de las áreas se dedujeron de las fotos y del PowerPoint, y la posición de áreas y pictogramas se trasladó a mano desde el layout del PowerPoint a los planos nuevos. Conviene revisarlos; todo se corrige arrastrando en el editor.
 
 ## Estructura

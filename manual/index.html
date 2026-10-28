@@ -212,7 +212,7 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
   <li>Debajo de cada miniatura: <b>📍</b> ubicar químicos en la foto, <b>‹ ›</b> cambiar el orden, <b>🗑</b> eliminar.</li>
   <li>La primera foto es la que se muestra primero en el mapa exportado; las demás se recorren con flechas.</li>
 </ul>
-<p>Si un área no tiene foto, el editor la marca como <span class="ui">Foto pendiente</span> y el mapa exportado muestra un aviso de «Foto pendiente — se agregará posteriormente». Es el caso actual de las áreas de <b>Línea 2</b>.</p>
+<p>Si un área no tiene foto, el editor la marca como <span class="ui">Foto pendiente</span> y el mapa exportado muestra un aviso de «Foto pendiente — se agregará posteriormente».</p>
 <p>La sección <b>Sustancias en esta área</b> lista los químicos del área. Desde ahí puedes agregar más (<span class="ui">+ Agregar sustancia al área…</span>), quitar (✕) o colocar su pictograma en el plano (◎).</p>
 </div>
 <figure class="phone"><img src="img/ed-area-panel.webp" alt="Panel de propiedades de un área" loading="lazy"><figcaption>Panel del área: nombre, descripción, fotos y sustancias.</figcaption></figure>
@@ -260,7 +260,7 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
 <section id="quimicos">
 <h2>8. Biblioteca de químicos</h2>
 <p>La pestaña <b>Químicos</b> del panel izquierdo contiene todas las sustancias, compartidas por todos los mapas. Si actualizas la ficha de un químico, se actualiza en todos los mapas al volver a exportarlos.</p>
-<p>En la lista se ve cuántos pictogramas tiene cada sustancia y cuántas fichas; las que no tienen ficha aparecen con <span class="ui">Ficha pendiente</span> (actualmente ALCOHOL y DRYEXX GF).</p>
+<p>En la lista se ve cuántos pictogramas tiene cada sustancia y cuántas fichas; las que no tienen ficha aparecen con <span class="ui">Ficha pendiente</span> (actualmente ALCOHOL y DIVOBRITE).</p>
 <figure><img src="img/ed-quimico.webp" alt="Editor de un químico" loading="lazy"><figcaption>Editor del químico TOPAX 66: nombre, colores del pictograma y fichas.</figcaption></figure>
 
 <h3 id="q-colores">8.1 Crear un químico, nombre y colores</h3>
@@ -274,13 +274,13 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
   <tr><th>Sustancia</th><th>Pictograma</th><th>Sustancia</th><th>Pictograma</th></tr>
   <tr><td>TOPAX 32</td><td><span class="ic" style="--f:#fff;--r:#000"></span> aro negro</td><td>RIMAZON OXO</td><td><span class="ic" style="--f:#0070C0;--r:#000"></span> azul, aro negro</td></tr>
   <tr><td>TOPAX 58</td><td><span class="ic" style="--f:#fff;--r:#f00"></span> aro rojo</td><td>RIMAZON SAUER</td><td><span class="ic" style="--f:#f00;--r:#000"></span> rojo, aro negro</td></tr>
-  <tr><td>TOPAX 66</td><td><span class="ic" style="--f:#fff;--r:#FFD800"></span> aro amarillo</td><td>DICOLUBE CR / DRYEXX GF</td><td><span class="ic" style="--f:#00B050;--r:#000"></span> verde, aro negro</td></tr>
-  <tr><td>OXONIA ACTIVE</td><td><span class="ic" style="--f:#fff;--r:#00B0F0"></span> aro celeste</td><td>SU 221 / STABILON</td><td><span class="ic" style="--f:#0070C0;--r:#00B050"></span> azul, aro verde</td></tr>
+  <tr><td>TOPAX 66</td><td><span class="ic" style="--f:#fff;--r:#FFD800"></span> aro amarillo</td><td>DICOLUBE CR</td><td><span class="ic" style="--f:#00B050;--r:#000"></span> verde, aro negro</td></tr>
+  <tr><td>OXONIA ACTIVE</td><td><span class="ic" style="--f:#fff;--r:#00B0F0"></span> aro celeste</td><td>SU 221 (L1) / DIVOBRITE (L2)</td><td><span class="ic" style="--f:#0070C0;--r:#00B050"></span> azul, aro verde</td></tr>
   <tr><td>GOMA</td><td><span class="ic" style="--f:#fff;--r:#00B050"></span> aro verde</td><td>ÁCIDO NÍTRICO</td><td><span class="ic" style="--f:#000;--r:#f00"></span> negro, aro rojo</td></tr>
   <tr><td>SODA CÁUSTICA</td><td><span class="ic" style="--f:#7030A0;--r:#7030A0"></span> morado</td><td>D-CITRUS</td><td><span class="ic" style="--f:#ff0;--r:#000"></span> amarillo, aro negro</td></tr>
   <tr><td>ALCOHOL</td><td><span class="ic" style="--f:#00B0F0;--r:#00B0F0"></span> celeste</td><td></td><td></td></tr>
 </table>
-<div class="warn"><b>Colores repetidos</b>DICOLUBE CR (L1) y DRYEXX GF (L2) comparten colores, igual que SU 221 y STABILON, porque así están en las leyendas de cada línea. No es problema mientras cada mapa no use ambos; si un mismo mapa los necesita, asigna colores distintos.</div>
+<div class="warn"><b>Colores repetidos</b>SU 221 (L1) y DIVOBRITE (L2) comparten colores porque así están en las leyendas de cada línea. No es problema mientras cada mapa no use ambos; si un mismo mapa los necesita, asigna colores distintos.</div>
 
 <h3 id="q-fichas">8.2 Fichas SGA</h3>
 <p>Cada químico puede tener una o varias fichas (una por presentación o concentración). En el mapa exportado aparecen como pestañas, por ejemplo «Hidróxido de Sodio 50 % · 1000 Kg» y «2 – 2,5 % · 5200 L».</p>
@@ -385,13 +385,13 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
 
 <section id="tareas">
 <h2>13. Tareas frecuentes</h2>
-<h3>Agregar las fotos pendientes de Línea 2</h3>
+<h3>Agregar o cambiar las fotos de un área</h3>
 <ol class="steps">
-  <li>Pestaña <b>Mapas</b> → <b>Línea 2</b>. Las áreas sin foto muestran <span class="ui">Foto pend.</span>.</li>
+  <li>Pestaña <b>Mapas</b> → elige el mapa. Las áreas sin foto muestran <span class="ui">Foto pend.</span>.</li>
   <li>Haz clic en el área → <span class="ui">+ Agregar fotos…</span> → elige las fotos.</li>
   <li>(Opcional) Toca la foto y ubica los químicos sobre ella.</li>
   <li>Repite con cada área. El resumen del mapa muestra cuántas faltan.</li>
-  <li><span class="ui">Exportar HTML</span> → reemplaza <code>Mapa_Linea_2.html</code> donde esté publicado.</li>
+  <li><span class="ui">Exportar HTML</span> → reemplaza el HTML de ese mapa donde esté publicado.</li>
 </ol>
 <h3>Llega un químico nuevo a la planta</h3>
 <ol class="steps">
