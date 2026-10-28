@@ -44,6 +44,7 @@
     map: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>',
     copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V3H3v13h5"/></svg>',
     pdf: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6 2h8l5 5v15H6z"/><path d="M14 2v5h5"/><path d="M9 13h1.5a1.5 1.5 0 0 1 0 3H9v-4.5M13.5 16.5v-4.5h1a2 2 0 0 1 0 4.5z"/></svg>',
+    help: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17v.5"/></svg>',
     flask: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M9 3h6M10 3v6L4.5 19A1.5 1.5 0 0 0 6 21h12a1.5 1.5 0 0 0 1.4-2L14 9V3"/><path d="M7 15h10"/></svg>'
   };
 
@@ -244,7 +245,8 @@
       h('div', { class: 'ed-sep' }),
       h('button', { class: 'btn', disabled: !curMap(), onclick: function () { openPreview(); } }, ic('eye'), h('span', { class: 'lbl' }, 'Vista previa')),
       menuButton('export', h('span', { class: 'lbl' }, 'Exportar HTML'), 'download', true, exportMenu),
-      menuButton('project', h('span', { class: 'lbl' }, 'Proyecto'), 'folder', false, projectMenu));
+      menuButton('project', h('span', { class: 'lbl' }, 'Proyecto'), 'folder', false, projectMenu),
+      h('a', { class: 'btn', href: 'manual/index.html', target: '_blank', rel: 'noopener', title: 'Manual de usuario' }, ic('help'), h('span', { class: 'lbl' }, 'Ayuda')));
   }
   function menuButton(key, label, icon, primary, build) {
     var wrap = h('div', { class: 'menu-wrap' });

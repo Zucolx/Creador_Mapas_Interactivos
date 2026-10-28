@@ -21,6 +21,10 @@ En el teléfono se puede pellizcar para ampliar, arrastrar para moverse, y el bo
 | `exportados/Mapa_Linea_2.html` | Mapa interactivo L2 (9 áreas, fotos pendientes) |
 | `exportados/Mapas_de_sustancias_quimicas_Envase.html` | L1 y L2 en un solo archivo, con selector |
 
+## Manual de usuario
+
+El manual completo, con capturas, está en [`manual/index.html`](manual/index.html) (también se abre con el botón **Ayuda** del editor). Incluye una sección para el personal que solo consulta los mapas.
+
 ## Usar el editor
 
 Abre `index.html` en Chrome, Edge o Firefox (doble clic basta; también funciona publicado en GitHub Pages). La primera vez se carga el ejemplo L1/L2 y los cambios se guardan solos en el navegador.
@@ -44,6 +48,7 @@ Abre `index.html` en Chrome, Edge o Firefox (doble clic basta; también funciona
 
 ```
 index.html              editor
+manual/                 manual de usuario (HTML + capturas)
 css/editor.css          estilos del editor
 js/editor.js            lógica del editor
 js/viewer-runtime.js    visor (se incrusta tal cual en cada HTML exportado)

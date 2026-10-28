@@ -31,6 +31,7 @@ svg { display: block; }
 
 /* ---------- botones ---------- */
 .btn {
+  text-decoration: none;
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   border: 1px solid var(--line-2); background: #fff; border-radius: 9px;
   padding: 7px 12px; font-weight: 600; font-size: 13.5px; white-space: nowrap;

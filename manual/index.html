@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manual de usuario · Creador de Mapas Interactivos</title>
+<style>
+:root{--bg:#f6f7f9;--panel:#fff;--ink:#1c2330;--muted:#5d6676;--line:#dde1e7;--head:#1f2a37;--accent:#b8860b;--accent-2:#f2c94c;--soft:#fff7df;--blue:#1565c0;--danger:#c62828;--ok:#2e7d32}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:16px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+header.top{background:var(--head);color:#fff;padding:28px 24px}
+header.top .in{max-width:1180px;margin:0 auto;display:flex;gap:16px;align-items:center}
+.logo{width:48px;height:48px;border-radius:12px;background:var(--accent-2);color:#3b2b00;display:grid;place-items:center;flex:none}
+.logo svg{width:28px;height:28px}
+header.top h1{margin:0;font-size:26px;line-height:1.2}
+header.top p{margin:4px 0 0;opacity:.8}
+.layout{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:250px minmax(0,1fr);gap:32px;padding:24px}
+nav.toc{position:sticky;top:16px;align-self:start;max-height:calc(100vh - 32px);overflow:auto;font-size:14px}
+nav.toc b{display:block;text-transform:uppercase;letter-spacing:.07em;font-size:12px;color:var(--muted);margin-bottom:6px}
+nav.toc ol{margin:0;padding-left:28px}
+nav.toc li{margin:3px 0}
+nav.toc ol ol{padding-left:16px;font-size:13.5px}
+nav.toc a{color:var(--ink);text-decoration:none}
+nav.toc a:hover{color:var(--blue);text-decoration:underline}
+main{min-width:0}
+section{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:8px 28px 24px;margin-bottom:22px}
+h2{font-size:23px;margin:22px 0 10px;padding-bottom:8px;border-bottom:3px solid var(--accent-2)}
+h3{font-size:18px;margin:26px 0 8px}
+h4{font-size:15.5px;margin:18px 0 6px}
+p,li{max-width:78ch}
+a{color:var(--blue)}
+figure{margin:16px 0 20px}
+figure img{display:block;max-width:100%;height:auto;border:1px solid var(--line);border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.08);background:#fff}
+figure.phone img{max-width:min(300px,100%)}
+figure.half img{max-width:min(560px,100%)}
+figcaption{font-size:13.5px;color:var(--muted);margin-top:6px}
+.duo{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;align-items:start}
+.duo figure{margin:8px 0}
+ol.steps{padding-left:0;list-style:none;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding-left:40px;margin:10px 0}
+ol.steps>li::before{content:counter(s);position:absolute;left:0;top:1px;width:28px;height:28px;border-radius:50%;background:var(--head);color:#fff;font-weight:700;font-size:14px;display:grid;place-items:center}
+.note,.tip,.warn{border-radius:10px;padding:12px 16px;margin:14px 0;font-size:15px}
+.tip{background:#e8f5e9;border-left:5px solid var(--ok)}
+.note{background:#e8f1fc;border-left:5px solid var(--blue)}
+.warn{background:#fff3e0;border-left:5px solid #e67700}
+.tip b:first-child,.note b:first-child,.warn b:first-child{display:block;margin-bottom:2px}
+kbd{font:13px ui-monospace,SFMono-Regular,Menlo,monospace;background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px}
+.ui{font-weight:600;background:var(--soft);border:1px solid #f0dfaa;border-radius:6px;padding:0 6px;white-space:nowrap}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:15px}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--bg)}
+.ic{display:inline-block;width:16px;height:16px;border-radius:50%;border:4px solid var(--r);background:var(--f);box-shadow:0 0 0 1px rgba(0,0,0,.25);vertical-align:-3px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:14px 0}
+.card{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fcfcfd}
+.card b{display:block;margin-bottom:4px}
+.card p{margin:0;font-size:14.5px;color:var(--muted)}
+details{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0;background:#fcfcfd}
+details summary{cursor:pointer;font-weight:600}
+details p{margin:8px 0 2px}
+.check li{list-style:none;position:relative;padding-left:4px}
+.check li::before{content:"☐";position:absolute;left:-22px}
+footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);font-size:13.5px}
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;padding:14px}
+  nav.toc{position:static;max-height:none;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 18px}
+  section{padding:6px 16px 18px}
+  header.top{padding:20px 16px}
+  header.top h1{font-size:21px}
+}
+@media print{
+  nav.toc,header.top .logo{display:none}
+  .layout{display:block;padding:0}
+  section{border:0;padding:0;break-inside:auto}
+  figure{break-inside:avoid}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17v.5" stroke-linecap="round"/></svg></div>
+  <div><h1>Manual de usuario · Creador de Mapas Interactivos</h1>
+  <p>Cómo crear, editar, exportar y consultar los mapas de sustancias químicas (Línea 1, Línea 2 y nuevos mapas)</p></div>
+</div></header>
+
+<div class="layout">
+<nav class="toc" aria-label="Contenido">
+  <b>Contenido</b>
+  <ol>
+    <li><a href="#intro">Introducción</a></li>
+    <li><a href="#inicio">Abrir la aplicación</a></li>
+    <li><a href="#pantalla">La pantalla del editor</a></li>
+    <li><a href="#mapas">Mapas y planos</a></li>
+    <li><a href="#areas">Áreas</a>
+      <ol><li><a href="#area-crear">Crear y ajustar</a></li><li><a href="#area-fotos">Fotos</a></li><li><a href="#area-pines">Químicos en la foto</a></li></ol></li>
+    <li><a href="#pictogramas">Pictogramas en el plano</a></li>
+    <li><a href="#textos">Textos</a></li>
+    <li><a href="#quimicos">Biblioteca de químicos</a>
+      <ol><li><a href="#q-colores">Nombre y colores</a></li><li><a href="#q-fichas">Fichas SGA</a></li><li><a href="#q-pdf">Importar desde PDF</a></li></ol></li>
+    <li><a href="#previa">Vista previa</a></li>
+    <li><a href="#exportar">Exportar y distribuir</a></li>
+    <li><a href="#proyecto">Guardar y abrir proyectos</a></li>
+    <li><a href="#visor">Consultar el mapa (personal de planta)</a></li>
+    <li><a href="#tareas">Tareas frecuentes</a></li>
+    <li><a href="#atajos">Atajos de teclado</a></li>
+    <li><a href="#faq">Problemas y preguntas</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="intro">
+<h2>1. Introducción</h2>
+<p>El <b>Creador de Mapas Interactivos</b> sirve para construir mapas de ubicación de sustancias químicas a partir de un plano de la planta y publicarlos como <b>archivos HTML independientes</b> que cualquier persona puede abrir en PC o en teléfono.</p>
+<p>Un mapa tiene tres niveles de información, igual que el PowerPoint <i>Layout de químicos L1</i>:</p>
+<div class="cards">
+  <div class="card"><b>1 · Mapa general</b><p>Plano de la línea con las áreas marcadas y los pictogramas de colores de cada sustancia.</p></div>
+  <div class="card"><b>2 · Área</b><p>Al tocar un área: foto(s) del lugar, sustancias presentes y ubicación en el plano.</p></div>
+  <div class="card"><b>3 · Ficha del químico</b><p>Al tocar un pictograma: etiqueta SGA, palabra de advertencia, frases H, contacto de emergencia y dónde se encuentra.</p></div>
+</div>
+<p>El sistema tiene dos partes:</p>
+<ul>
+  <li><b>El editor</b> (<code>index.html</code>): donde la persona responsable crea y mantiene los mapas. Pensado para PC o tablet.</li>
+  <li><b>Los mapas exportados</b> (<code>Mapa_Linea_1.html</code>, etc.): el resultado final que se comparte con el personal. Son de solo consulta, no necesitan internet ni instalar nada.</li>
+</ul>
+<div class="note"><b>Importante</b>Los cambios que haces en el editor <u>no</u> se ven automáticamente en los HTML ya repartidos. Después de editar hay que <a href="#exportar">exportar de nuevo</a> y reemplazar el archivo publicado.</div>
+</section>
+
+<section id="inicio">
+<h2>2. Abrir la aplicación</h2>
+<ol class="steps">
+  <li>Abre la carpeta del proyecto <code>Creador_Mapas_Interactivos</code>.</li>
+  <li>Haz doble clic en <code>index.html</code>. Se abre en el navegador (Chrome, Edge o Firefox recomendados).</li>
+  <li>La primera vez se carga el <b>ejemplo L1 / L2</b>. A partir de ahí, todo lo que cambies se guarda solo en ese navegador; el indicador de la cabecera muestra <span class="ui">Guardado en este navegador</span>.</li>
+</ol>
+<div class="warn"><b>El guardado automático es local</b>Queda en el navegador y equipo donde trabajas. Si cambias de equipo, de navegador o borras los datos de navegación, no lo verás. Para tener una copia segura usa <span class="ui">Proyecto → Guardar proyecto (.json)</span> (ver <a href="#proyecto">sección 11</a>).</div>
+<p>También puedes acceder desde el botón <span class="ui">? Ayuda</span> de la cabecera del editor para volver a este manual.</p>
+</section>
+
+<section id="pantalla">
+<h2>3. La pantalla del editor</h2>
+<figure><img src="img/ed-general.webp" alt="Pantalla general del editor con el mapa de Línea 1" loading="lazy"><figcaption>Pantalla general: panel izquierdo (mapas / químicos), lienzo con el plano en el centro y panel de propiedades a la derecha.</figcaption></figure>
+<table>
+  <tr><th>Zona</th><th>Qué contiene</th></tr>
+  <tr><td><b>Cabecera</b></td><td>Nombre del proyecto (editable), estado de guardado, <span class="ui">Deshacer</span> / <span class="ui">Rehacer</span>, <span class="ui">Vista previa</span>, <span class="ui">Exportar HTML</span>, <span class="ui">Proyecto</span> y <span class="ui">Ayuda</span>.</td></tr>
+  <tr><td><b>Panel izquierdo</b></td><td>Pestaña <b>Mapas</b>: lista de mapas y, debajo del mapa activo, sus áreas (con aviso de <span class="ui">Foto pend.</span>). Pestaña <b>Químicos</b>: la biblioteca de sustancias.</td></tr>
+  <tr><td><b>Barra de herramientas</b></td><td>Seleccionar, Área, Pictograma (con la lista de sustancias) y Texto. A la derecha, una ayuda breve de la herramienta activa.</td></tr>
+  <tr><td><b>Lienzo</b></td><td>El plano con áreas, pictogramas y textos. Botones de zoom abajo a la derecha.</td></tr>
+  <tr><td><b>Panel derecho</b></td><td>Propiedades de lo seleccionado: del mapa (si no hay nada seleccionado), de un área, de un pictograma o de un texto.</td></tr>
+</table>
+<figure class="half"><img src="img/ed-toolbar.webp" alt="Barra de herramientas" loading="lazy"><figcaption>Barra de herramientas. Cada herramienta tiene una tecla rápida: <kbd>V</kbd> <kbd>A</kbd> <kbd>P</kbd> <kbd>T</kbd>.</figcaption></figure>
+<h3>Moverse por el plano</h3>
+<ul>
+  <li><b>Zoom</b>: rueda del ratón (se acerca hacia donde apunta el cursor), botones <span class="ui">+</span> <span class="ui">−</span>, o teclas <kbd>+</kbd> <kbd>−</kbd>.</li>
+  <li><b>Desplazar</b>: con la herramienta Seleccionar, arrastra una zona vacía del plano. Con cualquier herramienta: mantén <kbd>Espacio</kbd> y arrastra, o usa el botón central del ratón.</li>
+  <li><b>Ver todo</b>: botón <span class="ui">⤢</span> o tecla <kbd>0</kbd>.</li>
+</ul>
+</section>
+
+<section id="mapas">
+<h2>4. Mapas y planos</h2>
+<h3>Crear un mapa nuevo</h3>
+<ol class="steps">
+  <li>En la pestaña <b>Mapas</b> pulsa <span class="ui">+ Nuevo</span>.</li>
+  <li>Escribe el <b>nombre corto</b> (es el que aparece en la pestaña del mapa exportado, p. ej. «Línea 3»), el <b>título</b> y, si quieres, un <b>subtítulo</b>.</li>
+  <li>Pulsa <span class="ui">Elegir imagen…</span> y selecciona el plano (PNG, JPG o WebP). Puedes dejarlo para después.</li>
+  <li>Pulsa <span class="ui">Crear mapa</span>.</li>
+</ol>
+<figure class="half"><img src="img/ed-nuevo-mapa.webp" alt="Diálogo de nuevo mapa" loading="lazy"><figcaption>Diálogo «Nuevo mapa».</figcaption></figure>
+<div class="tip"><b>Consejo para el plano</b>Usa una imagen nítida de al menos 2000 px de ancho, con fondo blanco. Si tienes el plano en PDF o CAD, expórtalo antes como imagen PNG. Deja un margen blanco alrededor si quieres ubicar zonas exteriores (tanques, cuartos, bodegas).</div>
+<h3>Propiedades del mapa</h3>
+<p>Con nada seleccionado (pulsa <kbd>Esc</kbd> o haz clic en una zona vacía), el panel derecho muestra el mapa:</p>
+<ul>
+  <li><b>Nombre, título y subtítulo</b>.</li>
+  <li><b>Plano base → Cambiar plano…</b>: reemplaza la imagen. Las áreas y pictogramas conservan su posición relativa (en %), así que conviene que el nuevo plano tenga el mismo encuadre.</li>
+  <li><b>Tamaño de los pictogramas</b>: los agranda o achica en todo el mapa.</li>
+  <li><b>Resumen</b>: número de áreas y pictogramas, áreas con <b>foto pendiente</b> y sustancias <b>sin ficha</b>. Es la lista de tareas pendientes del mapa.</li>
+  <li>Botones <span class="ui">Vista previa</span>, <span class="ui">Exportar</span>, <span class="ui">Duplicar</span> y <span class="ui">Eliminar</span>.</li>
+</ul>
+</section>
+
+<section id="areas">
+<h2>5. Áreas</h2>
+<p>Un área es una zona <b>clicable</b> del plano (un cuarto, un equipo, una estación). En el mapa exportado se ve como un recuadro punteado con su nombre y, al tocarla, abre su foto y la lista de sustancias.</p>
+
+<h3 id="area-crear">5.1 Crear y ajustar un área</h3>
+<ol class="steps">
+  <li>Elige la herramienta <span class="ui">Área</span> (<kbd>A</kbd>).</li>
+  <li>Arrastra sobre el plano para dibujar un rectángulo que cubra la zona.</li>
+  <li>Al soltar, el área queda seleccionada y el cursor está en <b>Nombre del área</b>: escribe el nombre (p. ej. «Cuarto de materia prima L2»).</li>
+</ol>
+<div class="duo">
+<figure><img src="img/ed-dibujar.webp" alt="Dibujando un área" loading="lazy"><figcaption>Dibujando un área nueva.</figcaption></figure>
+<figure><img src="img/ed-area-nueva.webp" alt="Área recién creada" loading="lazy"><figcaption>Área creada: se escribe el nombre en el panel derecho.</figcaption></figure>
+</div>
+<h4>Mover, redimensionar y eliminar</h4>
+<ul>
+  <li><b>Mover</b>: con <span class="ui">Seleccionar</span> (<kbd>V</kbd>), arrastra el área. Sus pictogramas se mueven con ella.</li>
+  <li><b>Redimensionar</b>: arrastra los cuadritos azules de las esquinas del área seleccionada.</li>
+  <li><b>Ir a un área</b>: haz clic en su nombre en el panel izquierdo; el botón <span class="ui">Centrar</span> la enfoca en el lienzo.</li>
+  <li><b>Eliminar</b>: botón <span class="ui">Eliminar área</span> o tecla <kbd>Supr</kbd>. Se eliminan también sus pictogramas. Si fue un error: <kbd>Ctrl</kbd>+<kbd>Z</kbd>.</li>
+</ul>
+<figure><img src="img/ed-area.webp" alt="Área seleccionada en el editor" loading="lazy"><figcaption>Área «Cuarto de materia prima L1» seleccionada: contorno azul con esquinas para redimensionar.</figcaption></figure>
+
+<h3 id="area-fotos">5.2 Fotos del área</h3>
+<div class="duo">
+<div>
+<p>En el panel derecho del área, sección <b>Fotos del área</b>:</p>
+<ul>
+  <li><span class="ui">+ Agregar fotos…</span>: puedes elegir varias a la vez. Se reducen automáticamente para que el HTML no pese demasiado.</li>
+  <li>Debajo de cada miniatura: <b>📍</b> ubicar químicos en la foto, <b>‹ ›</b> cambiar el orden, <b>🗑</b> eliminar.</li>
+  <li>La primera foto es la que se muestra primero en el mapa exportado; las demás se recorren con flechas.</li>
+</ul>
+<p>Si un área no tiene foto, el editor la marca como <span class="ui">Foto pendiente</span> y el mapa exportado muestra un aviso de «Foto pendiente — se agregará posteriormente». Es el caso actual de las áreas de <b>Línea 2</b>.</p>
+<p>La sección <b>Sustancias en esta área</b> lista los químicos del área. Desde ahí puedes agregar más (<span class="ui">+ Agregar sustancia al área…</span>), quitar (✕) o colocar su pictograma en el plano (◎).</p>
+</div>
+<figure class="phone"><img src="img/ed-area-panel.webp" alt="Panel de propiedades de un área" loading="lazy"><figcaption>Panel del área: nombre, descripción, fotos y sustancias.</figcaption></figure>
+</div>
+
+<h3 id="area-pines">5.3 Ubicar los químicos sobre la foto</h3>
+<p>Esto permite que, en la foto del área, cada envase tenga encima su pictograma y al tocarlo se abra su ficha.</p>
+<ol class="steps">
+  <li>Haz clic en la miniatura de la foto (o en 📍).</li>
+  <li>A la derecha, elige la sustancia de la lista (las del área aparecen primero; <span class="ui">+ Otra sustancia…</span> agrega otras).</li>
+  <li>Haz clic en la foto justo sobre el envase. Repite con cada sustancia.</li>
+  <li>Para corregir: arrastra el pictograma. Para borrarlo: selecciónalo y pulsa <kbd>Supr</kbd> o <span class="ui">Eliminar ubicación seleccionada</span>.</li>
+  <li>Pulsa <span class="ui">Listo</span>.</li>
+</ol>
+<figure><img src="img/ed-pines.webp" alt="Editor de ubicaciones sobre la foto" loading="lazy"><figcaption>Ubicando Ácido nítrico, Topax 32 y Oxonia sobre la foto del cuarto de materia prima.</figcaption></figure>
+<div class="note"><b>Opcional</b>Si no ubicas los químicos en la foto, el área igualmente muestra la lista de sustancias con acceso a cada ficha.</div>
+</section>
+
+<section id="pictogramas">
+<h2>6. Pictogramas en el plano</h2>
+<p>Los pictogramas son los círculos de colores que identifican cada sustancia en el plano (relleno + aro, como en la leyenda de la planta).</p>
+<ol class="steps">
+  <li>Elige la sustancia en la lista desplegable de la barra de herramientas (al elegirla se activa la herramienta <span class="ui">Pictograma</span>). También puedes usar el botón ◎ junto a una sustancia en el panel del área.</li>
+  <li>Haz clic en el plano donde está la sustancia. Puedes seguir haciendo clic para colocar más del mismo tipo.</li>
+  <li>Pulsa <kbd>Esc</kbd> para terminar.</li>
+</ol>
+<div class="duo">
+<figure><img src="img/ed-pictograma.webp" alt="Colocando pictogramas" loading="lazy"><figcaption>Pictogramas de Topax 66 colocados dentro de un área.</figcaption></figure>
+<figure class="phone"><img src="img/ed-marker-panel.webp" alt="Panel de un pictograma" loading="lazy"><figcaption>Panel del pictograma: sustancia y área a la que pertenece.</figcaption></figure>
+</div>
+<ul>
+  <li><b>Asignación automática</b>: si colocas (o arrastras) un pictograma dentro de un área, queda asociado a ella y la sustancia se agrega a la lista del área.</li>
+  <li><b>Pictogramas sueltos</b>: si queda fuera de toda área, en el mapa exportado se toca directamente para abrir la ficha. En el editor se ven con un halo azul.</li>
+  <li><b>Cambiar</b>: selecciona el pictograma y cambia la <b>Sustancia</b> o el <b>Área</b> en el panel derecho. <span class="ui">Duplicar</span> crea una copia al lado.</li>
+  <li><b>Editar ficha</b> o doble clic en el pictograma: abre el químico en la biblioteca.</li>
+</ul>
+<div class="tip"><b>Comportamiento en el mapa exportado</b>Tocar un <b>pictograma</b> abre la <b>ficha</b>; tocar el <b>recuadro o nombre del área</b> abre el <b>área</b>. En el teléfono, con el mapa completo a la vista, los pictogramas son pequeños y el toque abre el área; al ampliar con los dedos ya se pueden tocar uno por uno.</div>
+</section>
+
+<section id="textos">
+<h2>7. Textos</h2>
+<p>La herramienta <span class="ui">Texto</span> (<kbd>T</kbd>) añade rótulos sobre el plano, como «USTED ESTÁ AQUÍ» o el nombre de una zona sin área. Haz clic donde quieras, escribe el texto en el panel derecho y ajusta el tamaño. Se mueven arrastrando con Seleccionar.</p>
+</section>
+
+<section id="quimicos">
+<h2>8. Biblioteca de químicos</h2>
+<p>La pestaña <b>Químicos</b> del panel izquierdo contiene todas las sustancias, compartidas por todos los mapas. Si actualizas la ficha de un químico, se actualiza en todos los mapas al volver a exportarlos.</p>
+<p>En la lista se ve cuántos pictogramas tiene cada sustancia y cuántas fichas; las que no tienen ficha aparecen con <span class="ui">Ficha pendiente</span> (actualmente ALCOHOL y DRYEXX GF).</p>
+<figure><img src="img/ed-quimico.webp" alt="Editor de un químico" loading="lazy"><figcaption>Editor del químico TOPAX 66: nombre, colores del pictograma y fichas.</figcaption></figure>
+
+<h3 id="q-colores">8.1 Crear un químico, nombre y colores</h3>
+<ol class="steps">
+  <li>Pulsa <span class="ui">+ Nuevo</span> en la pestaña Químicos.</li>
+  <li>Escribe el nombre tal como aparece en la etiqueta.</li>
+  <li>Elige el <b>Color de relleno</b> y el <b>Color del aro</b> (con el selector o con las muestras). La vista previa muestra cómo se verá en el plano.</li>
+</ol>
+<p>Código de colores usado en el ejemplo (tomado de la leyenda del PowerPoint):</p>
+<table>
+  <tr><th>Sustancia</th><th>Pictograma</th><th>Sustancia</th><th>Pictograma</th></tr>
+  <tr><td>TOPAX 32</td><td><span class="ic" style="--f:#fff;--r:#000"></span> aro negro</td><td>RIMAZON OXO</td><td><span class="ic" style="--f:#0070C0;--r:#000"></span> azul, aro negro</td></tr>
+  <tr><td>TOPAX 58</td><td><span class="ic" style="--f:#fff;--r:#f00"></span> aro rojo</td><td>RIMAZON SAUER</td><td><span class="ic" style="--f:#f00;--r:#000"></span> rojo, aro negro</td></tr>
+  <tr><td>TOPAX 66</td><td><span class="ic" style="--f:#fff;--r:#FFD800"></span> aro amarillo</td><td>DICOLUBE CR / DRYEXX GF</td><td><span class="ic" style="--f:#00B050;--r:#000"></span> verde, aro negro</td></tr>
+  <tr><td>OXONIA ACTIVE</td><td><span class="ic" style="--f:#fff;--r:#00B0F0"></span> aro celeste</td><td>SU 221 / STABILON</td><td><span class="ic" style="--f:#0070C0;--r:#00B050"></span> azul, aro verde</td></tr>
+  <tr><td>GOMA</td><td><span class="ic" style="--f:#fff;--r:#00B050"></span> aro verde</td><td>ÁCIDO NÍTRICO</td><td><span class="ic" style="--f:#000;--r:#f00"></span> negro, aro rojo</td></tr>
+  <tr><td>SODA CÁUSTICA</td><td><span class="ic" style="--f:#7030A0;--r:#7030A0"></span> morado</td><td>D-CITRUS</td><td><span class="ic" style="--f:#ff0;--r:#000"></span> amarillo, aro negro</td></tr>
+  <tr><td>ALCOHOL</td><td><span class="ic" style="--f:#00B0F0;--r:#00B0F0"></span> celeste</td><td></td><td></td></tr>
+</table>
+<div class="warn"><b>Colores repetidos</b>DICOLUBE CR (L1) y DRYEXX GF (L2) comparten colores, igual que SU 221 y STABILON, porque así están en las leyendas de cada línea. No es problema mientras cada mapa no use ambos; si un mismo mapa los necesita, asigna colores distintos.</div>
+
+<h3 id="q-fichas">8.2 Fichas SGA</h3>
+<p>Cada químico puede tener una o varias fichas (una por presentación o concentración). En el mapa exportado aparecen como pestañas, por ejemplo «Hidróxido de Sodio 50 % · 1000 Kg» y «2 – 2,5 % · 5200 L».</p>
+<figure><img src="img/ed-fichas.webp" alt="Fichas SGA de un químico" loading="lazy"><figcaption>Fichas de TOPAX 66: imagen de la etiqueta y datos que se muestran como texto.</figcaption></figure>
+<p>Campos de cada ficha:</p>
+<table>
+  <tr><th>Campo</th><th>Uso</th></tr>
+  <tr><td>Imagen</td><td>La etiqueta SGA. En el mapa se puede ampliar con los dedos. <span class="ui">Reemplazar</span> cambia la imagen.</td></tr>
+  <tr><td>Presentación / concentración</td><td>Nombre de la pestaña (p. ej. «Producto de limpieza 5 % · 22 Kg»).</td></tr>
+  <tr><td>Palabra de advertencia</td><td>PELIGRO (rojo) o ATENCIÓN (naranja).</td></tr>
+  <tr><td>Indicaciones de peligro</td><td>Una frase H por línea. Se muestran como texto legible en el teléfono sin tener que ampliar la imagen.</td></tr>
+  <tr><td>Contacto de emergencia</td><td>Teléfono que se destaca en verde.</td></tr>
+  <tr><td>Fuente / Notas</td><td>Origen del documento y observaciones adicionales.</td></tr>
+</table>
+<p>Para agregar fichas desde imágenes: <span class="ui">Agregar imagen(es)…</span> (PNG, JPG, WebP; puedes elegir varias).</p>
+
+<h3 id="q-pdf">8.3 Importar etiquetas desde un PDF</h3>
+<p>Si las etiquetas están en un PDF (una por página, como <i>ETIQUETAS FORMATO SGA.pdf</i>):</p>
+<ol class="steps">
+  <li>Abre un químico y pulsa <span class="ui">Importar desde PDF…</span>, o en la pestaña Químicos pulsa <span class="ui">Importar etiquetas desde PDF</span>.</li>
+  <li>Elige el PDF. Se muestran las miniaturas de todas las páginas; las que parecen etiquetas SGA se preseleccionan.</li>
+  <li>Elige el modo:
+    <ul><li><b>Agregar como fichas de «…»</b>: todas las páginas seleccionadas van al químico abierto.</li>
+    <li><b>Crear un químico por página</b>: usa el título de la etiqueta; si ya existe un químico con ese nombre, la ficha se agrega a él.</li></ul></li>
+  <li>Marca o desmarca páginas haciendo clic y pulsa <span class="ui">Importar</span>.</li>
+</ol>
+<figure><img src="img/ed-importar-pdf.webp" alt="Importación de etiquetas desde PDF" loading="lazy"><figcaption>Importación del PDF de etiquetas SGA: se leen las 34 páginas y se preseleccionan las que parecen etiquetas.</figcaption></figure>
+<p>La importación lee automáticamente la palabra de advertencia, las frases H, la presentación/volumen y el contacto de emergencia. Revisa los campos después de importar.</p>
+<div class="warn"><b>Requiere internet</b>El lector de PDF se descarga al usarlo. Sin conexión, exporta las páginas del PDF como imágenes y usa <span class="ui">Agregar imagen(es)…</span>.</div>
+<h4>Eliminar un químico</h4>
+<p>Al final de la página del químico, <span class="ui">Eliminar químico</span>. Se borran también sus pictogramas en todos los mapas (se puede deshacer con <kbd>Ctrl</kbd>+<kbd>Z</kbd>). La tarjeta <b>Uso en los mapas</b> muestra antes en qué áreas aparece.</p>
+</section>
+
+<section id="previa">
+<h2>9. Vista previa</h2>
+<p>El botón <span class="ui">Vista previa</span> muestra exactamente el HTML que se va a exportar, sin descargarlo. Arriba puedes cambiar entre <b>PC</b> y <b>Teléfono</b> para comprobar cómo se ve en cada caso, y exportar desde ahí mismo.</p>
+<figure class="half"><img src="img/ed-vista-previa.webp" alt="Vista previa en modo teléfono" loading="lazy"><figcaption>Vista previa en modo teléfono.</figcaption></figure>
+</section>
+
+<section id="exportar">
+<h2>10. Exportar y distribuir</h2>
+<figure class="half"><img src="img/ed-menu-exportar.webp" alt="Menú Exportar HTML" loading="lazy"><figcaption>Menú «Exportar HTML».</figcaption></figure>
+<table>
+  <tr><th>Opción</th><th>Resultado</th></tr>
+  <tr><td>Exportar «Línea 1»</td><td>Un archivo <code>Mapa_Linea_1.html</code> solo con ese mapa.</td></tr>
+  <tr><td>Exportar cada mapa por separado</td><td>Un archivo por mapa (el navegador puede pedir permiso para descargar varios archivos).</td></tr>
+  <tr><td>Exportar todos en un solo HTML</td><td>Un archivo con todos los mapas y botones para cambiar entre ellos en la cabecera.</td></tr>
+</table>
+<p>El HTML exportado contiene <b>todo</b>: plano, fotos, fichas y el visor. Solo incluye las fichas de las sustancias que aparecen en el mapa. Pesa unos 3–5 MB.</p>
+<h3>Cómo compartirlo</h3>
+<ul>
+  <li><b>PC</b>: carpeta compartida, correo o USB. Se abre con doble clic.</li>
+  <li><b>Teléfono</b>: lo más práctico es publicarlo en una dirección web (intranet, SharePoint/OneDrive con enlace, GitHub Pages) y compartir el enlace o un código QR pegado en el área. Al abrirlo como archivo descargado, algunas apps de vista previa del teléfono no ejecutan JavaScript; en ese caso, ábrelo con el navegador (Chrome o Safari).</li>
+  <li>Cuando actualices un mapa, <b>exporta de nuevo y reemplaza el archivo</b> en el mismo lugar, con el mismo nombre, para que el enlace o QR siga funcionando.</li>
+</ul>
+</section>
+
+<section id="proyecto">
+<h2>11. Guardar y abrir proyectos</h2>
+<figure class="half"><img src="img/ed-menu-proyecto.webp" alt="Menú Proyecto" loading="lazy"><figcaption>Menú «Proyecto».</figcaption></figure>
+<table>
+  <tr><th>Opción</th><th>Cuándo usarla</th></tr>
+  <tr><td>Guardar proyecto (.json)</td><td>Copia de seguridad completa y editable (mapas, químicos, fotos y fichas). Hazla después de cada sesión de cambios importante y guárdala en una carpeta compartida.</td></tr>
+  <tr><td>Abrir proyecto (.json)</td><td>Para continuar en otro equipo, recuperar una copia o recibir el trabajo de otra persona. Reemplaza el proyecto actual (se puede deshacer).</td></tr>
+  <tr><td>Restaurar ejemplo L1 / L2</td><td>Vuelve a cargar los mapas de demostración originales.</td></tr>
+  <tr><td>Nuevo proyecto vacío</td><td>Elimina los mapas pero conserva la biblioteca de químicos con sus fichas.</td></tr>
+</table>
+<div class="note"><b>Diferencia entre .json y .html</b>El <b>.json</b> es el archivo de trabajo: se abre en el editor y se puede modificar. El <b>.html</b> es el producto final de consulta: no se puede volver a editar en el editor.</div>
+</section>
+
+<section id="visor">
+<h2>12. Consultar el mapa (personal de planta)</h2>
+<p>Esta sección puede imprimirse o compartirse por separado con quienes solo consultan los mapas.</p>
+<h3>En PC</h3>
+<figure><img src="img/vi-mapa.webp" alt="Mapa exportado de Línea 1 en PC" loading="lazy"><figcaption>Mapa de Línea 1: áreas con su nombre, pictogramas y la leyenda a la derecha.</figcaption></figure>
+<ol class="steps">
+  <li><b>Ver un área</b>: haz clic en el recuadro o en la etiqueta oscura con su nombre.</li>
+  <li><b>Ver la ficha de un químico</b>: haz clic en su círculo de color (en el plano, en la foto o en la lista del área), o en su nombre en la leyenda.</li>
+  <li><b>Ampliar la etiqueta</b>: haz clic sobre la imagen de la etiqueta; se abre a pantalla completa con zoom.</li>
+  <li><b>Volver</b>: botón <span class="ui">‹ Mapa</span>, la ✕ de la ficha, la tecla <kbd>Esc</kbd> o el botón «atrás» del navegador.</li>
+</ol>
+<div class="duo">
+<figure><img src="img/vi-area.webp" alt="Vista de un área" loading="lazy"><figcaption>Área: fotos, sustancias presentes y ubicación.</figcaption></figure>
+<figure><img src="img/vi-ficha.webp" alt="Ficha de un químico" loading="lazy"><figcaption>Ficha: pestañas por presentación, etiqueta SGA y frases H.</figcaption></figure>
+</div>
+<h3>Leyenda: buscar y resaltar</h3>
+<p>La leyenda tiene dos pestañas: <b>Sustancias</b> y <b>Áreas</b>, con buscador. El botón ⌖ junto a una sustancia la <b>resalta en el mapa</b> (las demás se atenúan) para ver de un vistazo todos los lugares donde está. <span class="ui">Quitar</span> vuelve a la vista normal.</p>
+<figure><img src="img/vi-resaltar.webp" alt="Sustancia resaltada en el mapa" loading="lazy"><figcaption>Soda cáustica resaltada: se ven sus 9 ubicaciones en Línea 1.</figcaption></figure>
+<h3>En el teléfono</h3>
+<ul>
+  <li><b>Pellizca</b> para ampliar y <b>arrastra</b> con un dedo para moverte. Los botones <span class="ui">+</span> <span class="ui">−</span> <span class="ui">⤢</span> de la esquina también sirven.</li>
+  <li>El botón ☰ de la cabecera abre la leyenda desde abajo. La pestaña <b>Áreas</b> es la forma más cómoda de ir a un área en pantallas pequeñas.</li>
+  <li>El botón «atrás» del teléfono cierra la ficha o vuelve del área al mapa.</li>
+</ul>
+<div class="duo">
+<figure class="phone"><img src="img/tel-mapa.webp" alt="Mapa en teléfono" loading="lazy"><figcaption>Mapa completo.</figcaption></figure>
+<figure class="phone"><img src="img/tel-leyenda.webp" alt="Leyenda en teléfono" loading="lazy"><figcaption>Leyenda.</figcaption></figure>
+<figure class="phone"><img src="img/tel-area.webp" alt="Área en teléfono" loading="lazy"><figcaption>Área.</figcaption></figure>
+<figure class="phone"><img src="img/tel-ficha.webp" alt="Ficha en teléfono" loading="lazy"><figcaption>Ficha.</figcaption></figure>
+</div>
+</section>
+
+<section id="tareas">
+<h2>13. Tareas frecuentes</h2>
+<h3>Agregar las fotos pendientes de Línea 2</h3>
+<ol class="steps">
+  <li>Pestaña <b>Mapas</b> → <b>Línea 2</b>. Las áreas sin foto muestran <span class="ui">Foto pend.</span>.</li>
+  <li>Haz clic en el área → <span class="ui">+ Agregar fotos…</span> → elige las fotos.</li>
+  <li>(Opcional) Toca la foto y ubica los químicos sobre ella.</li>
+  <li>Repite con cada área. El resumen del mapa muestra cuántas faltan.</li>
+  <li><span class="ui">Exportar HTML</span> → reemplaza <code>Mapa_Linea_2.html</code> donde esté publicado.</li>
+</ol>
+<h3>Llega un químico nuevo a la planta</h3>
+<ol class="steps">
+  <li>Químicos → <span class="ui">+ Nuevo</span> (o <span class="ui">Importar etiquetas desde PDF</span>). Nombre, colores y ficha SGA.</li>
+  <li>Mapas → elige la sustancia en la barra de herramientas y haz clic en el plano donde se almacena.</li>
+  <li>Verifica en <span class="ui">Vista previa</span> y exporta de nuevo los mapas afectados.</li>
+</ol>
+<h3>Un químico cambia de lugar o se retira</h3>
+<ul>
+  <li><b>Cambia de lugar</b>: arrastra su pictograma a la nueva área (se reasigna solo) y, si tiene ubicación en la foto, corrígela.</li>
+  <li><b>Se retira de un área</b>: en el panel del área, ✕ junto a la sustancia (elimina también sus pictogramas en esa área).</li>
+  <li><b>Se retira de la planta</b>: Químicos → <span class="ui">Eliminar químico</span>.</li>
+</ul>
+<h3>Actualizar una etiqueta SGA</h3>
+<p>Químicos → el químico → en la ficha, <span class="ui">Reemplazar</span> la imagen y revisa los campos de texto. Luego exporta todos los mapas donde aparece (la tarjeta «Uso en los mapas» lo indica).</p>
+<h3>Lista de verificación antes de publicar</h3>
+<ul class="check">
+  <li>El resumen del mapa no muestra áreas con foto pendiente (o están justificadas).</li>
+  <li>Ninguna sustancia del mapa tiene «Ficha pendiente» (o está justificada).</li>
+  <li>Los colores del mapa coinciden con la leyenda física de la línea.</li>
+  <li>Revisada la vista previa en modo Teléfono.</li>
+  <li>Exportado el HTML y reemplazado en el lugar publicado.</li>
+  <li>Guardada una copia del proyecto (.json).</li>
+</ul>
+</section>
+
+<section id="atajos">
+<h2>14. Atajos de teclado (editor)</h2>
+<table>
+  <tr><th>Tecla</th><th>Acción</th></tr>
+  <tr><td><kbd>V</kbd></td><td>Herramienta Seleccionar</td></tr>
+  <tr><td><kbd>A</kbd></td><td>Herramienta Área</td></tr>
+  <tr><td><kbd>P</kbd></td><td>Herramienta Pictograma</td></tr>
+  <tr><td><kbd>T</kbd></td><td>Herramienta Texto</td></tr>
+  <tr><td><kbd>Esc</kbd></td><td>Volver a Seleccionar / quitar la selección / cerrar diálogos</td></tr>
+  <tr><td><kbd>Supr</kbd> o <kbd>Retroceso</kbd></td><td>Eliminar lo seleccionado</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>Deshacer</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>Y</kbd> o <kbd>Ctrl</kbd>+<kbd>Mayús</kbd>+<kbd>Z</kbd></td><td>Rehacer</td></tr>
+  <tr><td><kbd>+</kbd> / <kbd>−</kbd> / <kbd>0</kbd></td><td>Acercar / alejar / ver todo el plano</td></tr>
+  <tr><td><kbd>Espacio</kbd> + arrastrar</td><td>Desplazar el plano con cualquier herramienta</td></tr>
+  <tr><td>Doble clic en un pictograma</td><td>Abrir el químico en la biblioteca</td></tr>
+</table>
+<p>En Mac, usa <kbd>⌘</kbd> en lugar de <kbd>Ctrl</kbd>.</p>
+</section>
+
+<section id="faq">
+<h2>15. Problemas y preguntas frecuentes</h2>
+<details><summary>Cambié algo en el editor pero el mapa que tienen en planta no cambió.</summary>
+<p>Los HTML exportados son copias fijas. Exporta de nuevo y reemplaza el archivo publicado.</p></details>
+<details><summary>Abrí el editor y no aparecen mis cambios.</summary>
+<p>El guardado automático es por navegador y equipo. Comprueba que usas el mismo navegador y equipo. Si borraste los datos de navegación o cambiaste de equipo, usa <span class="ui">Proyecto → Abrir proyecto (.json)</span> con tu última copia.</p></details>
+<details><summary>Me equivoqué y borré un área o un químico.</summary>
+<p>Pulsa <kbd>Ctrl</kbd>+<kbd>Z</kbd> (o el botón Deshacer de la cabecera) tantas veces como haga falta. El historial se pierde al recargar la página.</p></details>
+<details><summary>La importación de PDF dice que no se pudo cargar el lector.</summary>
+<p>Necesita conexión a internet. Alternativa: exporta las páginas del PDF como imágenes y usa <span class="ui">Agregar imagen(es)…</span>.</p></details>
+<details><summary>En el teléfono el HTML se ve como texto o en blanco.</summary>
+<p>La app que lo abrió no ejecuta JavaScript (por ejemplo una vista previa de archivos). Ábrelo con Chrome o Safari, o publícalo en una dirección web y comparte el enlace.</p></details>
+<details><summary>En el teléfono es difícil tocar un pictograma pequeño.</summary>
+<p>Amplía con dos dedos sobre la zona: a partir de cierto tamaño cada pictograma se puede tocar individualmente. También puedes abrir el área (o usar la leyenda) y tocar la sustancia en la lista.</p></details>
+<details><summary>El archivo HTML pesa mucho.</summary>
+<p>El peso viene sobre todo de fotos y fichas. Las fotos se reducen automáticamente al subirlas; evita subir fotos repetidas y elimina fichas que ya no se usen. Un mapa típico pesa 3–5 MB.</p></details>
+<details><summary>Cambié el plano y los pictogramas quedaron desplazados.</summary>
+<p>Las posiciones se guardan en porcentaje del plano. Si el nuevo plano tiene otro encuadre o márgenes, hay que reacomodar las áreas (arrastrándolas, sus pictogramas se mueven con ellas). Si el resultado no te convence, <kbd>Ctrl</kbd>+<kbd>Z</kbd> restaura el plano anterior.</p></details>
+<details><summary>¿Puedo usar la aplicación para otros planos (EPP, extintores, rutas de evacuación)?</summary>
+<p>Sí. Los «químicos» funcionan como cualquier elemento con un símbolo de color y una ficha con imagen; basta con crear los elementos que necesites en la biblioteca.</p></details>
+</section>
+
+</main>
+</div>
+<footer>Creador de Mapas Interactivos · Manual de usuario · Versión 1.0 — octubre 2026</footer>
+</body>
+</html>
