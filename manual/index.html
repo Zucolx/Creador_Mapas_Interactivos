@@ -449,6 +449,8 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
 <p>Necesita conexión a internet. Alternativa: exporta las páginas del PDF como imágenes y usa <span class="ui">Agregar imagen(es)…</span>.</p></details>
 <details><summary>En el teléfono el HTML se ve como texto o en blanco.</summary>
 <p>La app que lo abrió no ejecuta JavaScript (por ejemplo una vista previa de archivos). Ábrelo con Chrome o Safari, o publícalo en una dirección web y comparte el enlace.</p></details>
+<details><summary>Al abrir el HTML en la vista previa de SharePoint aparecía el error «Failed to execute 'replaceState'…».</summary>
+<p>Ocurría con archivos exportados antes del 28/10/2026: la vista previa de SharePoint muestra el HTML dentro de un marco aislado y el navegador no dejaba cambiar la dirección. Desde esa versión el mapa lo detecta y funciona igual (navega internamente). Si un archivo antiguo da este error, <b>vuelve a exportarlo</b> desde el editor y reemplázalo en SharePoint.</p></details>
 <details><summary>En el teléfono es difícil tocar un pictograma pequeño.</summary>
 <p>Amplía con dos dedos sobre la zona: a partir de cierto tamaño cada pictograma se puede tocar individualmente. También puedes abrir el área (o usar la leyenda) y tocar la sustancia en la lista.</p></details>
 <details><summary>El archivo HTML pesa mucho.</summary>

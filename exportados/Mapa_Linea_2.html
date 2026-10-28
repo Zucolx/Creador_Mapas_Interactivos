@@ -382,8 +382,27 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
     if (st.ficha) p += '/f/' + encodeURIComponent(st.ficha);
     return p;
   }
+  /* Navegacion: se guarda en el '#' de la direccion para que funcione el
+     boton «atras». Si el navegador no lo permite (p. ej. la vista previa de
+     SharePoint, que muestra el HTML en un marco aislado 'about:srcdoc' con
+     origen 'null'), se navega en memoria y el mapa funciona igual. */
+  var memMode = false, memHash = '';
+  function currentHash() { return memMode ? memHash : location.hash; }
+  function sameHash(a, b) {
+    try { return decodeURIComponent(a || '') === decodeURIComponent(b || ''); } catch (e) { return a === b; }
+  }
+  function toMemory(target) { memMode = true; memHash = target; onHash(); }
+  function navigate(target, replace) {
+    if (memMode) return toMemory(target);
+    try {
+      if (replace) history.replaceState(null, '', location.href.split('#')[0] + target);
+      else location.hash = target;
+    } catch (e) { return toMemory(target); }
+    if (!sameHash(location.hash, target)) return toMemory(target);
+    if (replace) onHash();
+  }
   function parseHash() {
-    var parts = location.hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent);
+    var parts = currentHash().replace(/^#\/?/, '').split('/').map(decodeURIComponent);
     var st = { map: MAPS[0].id, area: null, ficha: null };
     if (parts[0] && mapById(parts[0])) st.map = parts[0];
     for (var i = 1; i < parts.length - 1; i += 2) {
@@ -396,14 +415,14 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
     var st = { map: state.map, area: state.area, ficha: state.ficha };
     for (var k in partial) st[k] = partial[k];
     var target = hashFor(st);
-    if (target === location.hash) return;
-    if (hashStack.length > 1 && hashStack[hashStack.length - 2] === target) history.back();
-    else location.hash = target;
+    if (sameHash(target, currentHash())) return;
+    if (!memMode && hashStack.length > 1 && sameHash(hashStack[hashStack.length - 2], target)) history.back();
+    else navigate(target);
   }
   function onHash() {
-    var cur = location.hash;
-    if (hashStack.length > 1 && hashStack[hashStack.length - 2] === cur) hashStack.pop();
-    else if (hashStack[hashStack.length - 1] !== cur) hashStack.push(cur);
+    var cur = currentHash();
+    if (hashStack.length > 1 && sameHash(hashStack[hashStack.length - 2], cur)) hashStack.pop();
+    else if (!sameHash(hashStack[hashStack.length - 1], cur)) hashStack.push(cur);
     var st = parseHash();
     var mapChanged = st.map !== state.map;
     state.map = st.map; state.area = st.area; state.ficha = st.ficha;
@@ -769,13 +788,12 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
     else if (!side.hidden && isNarrow()) toggleSide(false);
     else if (state.area) go({ area: null });
   });
-  window.addEventListener('hashchange', onHash);
+  window.addEventListener('hashchange', function () { if (!memMode) onHash(); });
 
   side.hidden = true;
   if (!isNarrow() && OPTIONS.legendOpen !== false) toggleSide(true);
-  if (!location.hash || location.hash.length < 3) history.replaceState(null, '', hashFor(state));
-  hashStack.push(location.hash);
-  onHash();
+  if (!location.hash || location.hash.length < 3) navigate(hashFor(state), true);
+  else onHash();
 })(MAPA_DATA, document.getElementById("mapa-app"), {"footer":"Actualizado: 28 oct 2026","legendOpen":true});
 </script>
 </body>
