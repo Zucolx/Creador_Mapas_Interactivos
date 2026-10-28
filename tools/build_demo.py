@@ -121,6 +121,21 @@ L2 = dict(
     labels=[("USTED ESTÁ AQUÍ", 860, 1540)],
 )
 
+# Fichas que no estan en el PDF SGA: etiquetas generadas en tools/fichas_extra/
+# (fuente editable: etiquetas.html; imagenes con: node tools/fichas_extra/render.js).
+# Sin numero de telefono de emergencia, a pedido.
+EXTRA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fichas_extra")
+EXTRA_FICHAS = {
+    "alcohol": [dict(file="alcohol.png", caption="Alcohol etílico (etanol) 70 %", signal="PELIGRO",
+                     hazards=["H225: Líquido y vapores muy inflamables.", "H319: Provoca irritación ocular grave."],
+                     emergency="", notes="Ficha elaborada con la FDS pública de etanol 70 %. Confirmar que el alcohol usado en planta es etanol 70 % (si es isopropanol, la clasificación cambia).",
+                     source="FDS «Etanol 70 %», Panreac / ITW Reagents, rev. 15.07.2025")],
+    "divobrite": [dict(file="divobrite.png", caption="Divobrite Defend · aditivo para lavado de botellas (provisional)", signal="",
+                       hazards=[], emergency="",
+                       notes="FICHA PROVISIONAL: el fabricante no publica la FDS de Divobrite. Solicitar la FDS al proveedor (Diversey / Solenis) y reemplazar esta ficha con la clasificación SGA real.",
+                       source="Información comercial de Divobrite Defend (Diversey / Solenis)")],
+}
+
 MARGIN = 45
 
 
@@ -291,8 +306,12 @@ def main():
     maps = [build_map(L1, a.plano_l1, prs, assets, used), build_map(L2, a.plano_l2, prs, assets, used, a.fotos)]
     chems = []
     for cid, name, fill, ring, pages in CHEMICALS:
-        chems.append(dict(id=cid, name=name, fill=fill, ring=ring,
-                          fichas=[fichas[p] for p in pages if p in fichas]))
+        fl = [fichas[p] for p in pages if p in fichas]
+        for k, ex in enumerate(EXTRA_FICHAS.get(cid, [])):
+            aid = f"extra_{cid}_{k}"
+            assets[aid] = data_url(fit(Image.open(os.path.join(EXTRA_DIR, ex["file"])).convert("RGB"), 1400), quality=72)
+            fl.append(dict(img=aid, **{k2: v for k2, v in ex.items() if k2 != "file"}))
+        chems.append(dict(id=cid, name=name, fill=fill, ring=ring, fichas=fl))
     project = dict(app="creador-mapas-interactivos", version=1, name="Mapas de sustancias químicas · Envase",
                    chemicals=chems, maps=maps, assets=assets)
     os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True)

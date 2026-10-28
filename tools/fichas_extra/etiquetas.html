@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><title>Etiquetas SGA adicionales</title>
+<!-- Fuente de las etiquetas que no estaban en «ETIQUETAS FORMATO SGA.pdf».
+     Se convierten a imagen con: node tools/fichas_extra/render.js -->
+<style>
+body{margin:0;background:#888;font-family:Calibri,Carlito,"Segoe UI",Arial,sans-serif;color:#000}
+.label{width:1400px;height:969px;background:#fff;padding:22px;box-sizing:border-box;margin:0 0 20px}
+.frame{border:12px solid #000;border-radius:30px;height:100%;box-sizing:border-box;padding:18px 34px 16px;display:grid;grid-template-columns:330px 1fr;grid-template-rows:auto 1fr auto;column-gap:30px}
+.head{grid-column:1/3;text-align:center;line-height:1.1}
+.head h1{margin:0;font-size:58px;font-weight:800}
+.head h2{margin:4px 0 0;font-size:40px;font-weight:700}
+.left{display:flex;flex-direction:column;align-items:center;gap:12px;padding-top:16px}
+.signal{background:#000;color:#fff;font-weight:800;font-size:50px;padding:8px 0;width:100%;text-align:center;letter-spacing:.02em}
+.signal.none{background:#fff;color:#000;border:4px dashed #000;font-size:30px;padding:16px 0}
+.pic{text-align:center;font-size:24px}
+.pic svg{width:210px;height:210px;display:block;margin:0 auto 4px}
+.right{font-size:22px;line-height:1.28;padding-top:14px}
+.right h3{color:#e00000;font-size:24px;margin:10px 0 2px}
+.right b.k{font-size:23px}
+.comp td{padding:0 30px 0 0}
+.right p{margin:2px 0}
+.prov{border:4px solid #e00000;color:#e00000;font-weight:800;font-size:25px;padding:8px 12px;margin:6px 0 8px;text-align:center}
+.foot{grid-column:1/3;display:flex;justify-content:space-between;align-items:flex-end;gap:20px;font-size:20px}
+.foot .vol{font-size:34px;font-weight:800;white-space:nowrap}
+.foot i{display:block;text-align:center;font-size:21px}
+</style></head><body>
+
+<!-- Pictogramas SGA -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <g id="rombo"><polygon points="50,4 96,50 50,96 4,50" fill="#fff" stroke="#e00000" stroke-width="7" stroke-linejoin="miter"/></g>
+  </defs>
+</svg>
+
+<!-- ============================ ALCOHOL ============================ -->
+<div class="label" id="alcohol"><div class="frame">
+  <div class="head"><h1>ALCOHOL ETÍLICO</h1><h2>Etanol 70 %</h2></div>
+  <div class="left">
+    <div class="signal">PELIGRO</div>
+    <div class="pic"><svg viewBox="0 0 100 100"><use href="#rombo"/>
+      <path d="M50 20 C55 31 66 38 65 54 C64.5 63 58.5 69 50 70 C41.5 69 35.5 63 35 54 C34.5 46 39 41 41.5 34 C44.5 41 46 43.5 48 45.5 C50 38 47.5 29 50 20 Z" fill="#000"/>
+      <path d="M50 49 C53 54 57 57 56.5 62 C56 65.5 53.5 67.5 50 67.5 C46.5 67.5 44 65.5 43.5 62 C43.5 58 47 55 50 49 Z" fill="#fff"/>
+      <rect x="31" y="73" width="38" height="5" fill="#000"/></svg>INFLAMABLE</div>
+    <div class="pic"><svg viewBox="0 0 100 100"><use href="#rombo"/>
+      <path d="M45 26 H55 L53 59 H47 Z" fill="#000"/><circle cx="50" cy="68" r="5.2" fill="#000"/></svg>IRRITANTE</div>
+  </div>
+  <div class="right">
+    <b class="k">Componentes:</b>
+    <table class="comp"><tr><td>Etanol (alcohol etílico) · CAS 64-17-5</td><td>70 %</td></tr><tr><td>Agua</td><td>30 %</td></tr></table>
+    <h3>INDICACIONES DE PELIGRO</h3>
+    <p>H225: Líquido y vapores muy inflamables.</p>
+    <p>H319: Provoca irritación ocular grave.</p>
+    <h3>CONSEJOS DE PRUDENCIA</h3>
+    <p>P210: Mantener alejado del calor, de superficies calientes, de chispas, de llamas abiertas y de cualquier otra fuente de ignición. No fumar.</p>
+    <p>P280: Llevar guantes, prendas, gafas y máscara de protección.</p>
+    <p>P303+P361+P353: EN CASO DE CONTACTO CON LA PIEL (o el pelo): quitar inmediatamente toda la ropa contaminada. Enjuagar la piel con agua o ducharse.</p>
+    <p>P305+P351+P338: EN CASO DE CONTACTO CON LOS OJOS: aclarar cuidadosamente con agua durante varios minutos. Quitar las lentes de contacto, si lleva y resulta fácil. Seguir aclarando.</p>
+    <p>P403+P235: Almacenar en un lugar bien ventilado. Mantener en lugar fresco.</p>
+    <p>EN CASO DE INHALACIÓN: llevar a la persona al aire libre; consultar a un médico si hay molestias.</p>
+    <p>P501: Eliminar el contenido y el recipiente conforme a la reglamentación local.</p>
+  </div>
+  <div class="foot">
+    <span class="vol">VOLUMEN:</span>
+    <span><i>Para más información, consultar la Ficha de Datos de Seguridad (FDS) antes de utilizar el producto.</i>
+    <i style="font-size:17px;margin-top:4px">Información SGA según FDS «Etanol 70 %» (Panreac / ITW Reagents, rev. 15.07.2025). Verificar contra la FDS del proveedor de planta.</i></span>
+  </div>
+</div></div>
+
+<!-- ============================ DIVOBRITE ============================ -->
+<div class="label" id="divobrite"><div class="frame">
+  <div class="head"><h1>DIVOBRITE DEFEND</h1><h2>Aditivo para lavado de botellas</h2></div>
+  <div class="left">
+    <div class="signal none">PALABRA DE<br>ADVERTENCIA<br>PENDIENTE</div>
+    <div class="pic" style="font-size:22px;margin-top:20px">
+      <svg viewBox="0 0 100 100"><polygon points="50,4 96,50 50,96 4,50" fill="#fff" stroke="#999" stroke-width="5" stroke-dasharray="8 6"/>
+        <text x="50" y="62" text-anchor="middle" font-size="34" font-weight="700" fill="#999" font-family="Arial">?</text></svg>
+      Pictogramas según<br>FDS del proveedor</div>
+  </div>
+  <div class="right">
+    <div class="prov">FICHA PROVISIONAL · Clasificación SGA no publicada por el fabricante.<br>Solicitar la FDS al proveedor y reemplazar esta ficha.</div>
+    <b class="k">Descripción:</b>
+    <p>Aditivo líquido para el lavado de botellas retornables de vidrio y PET en la industria de bebidas. Se dosifica en la solución de soda cáustica de la lavadora de botellas.</p>
+    <b class="k">Componentes (según fabricante):</b>
+    <p>Mezcla de secuestrantes con agente antiespumante. Composición y porcentajes: ver FDS.</p>
+    <b class="k">Función:</b>
+    <p>Aumenta la detergencia, inhibe incrustaciones (dureza del agua, óxido, aluminio de etiquetas) y reduce la corrosión cáustica del vidrio.</p>
+    <h3>INDICACIONES DE PELIGRO</h3>
+    <p>Pendientes de confirmar con la Ficha de Datos de Seguridad del proveedor.</p>
+    <h3>PRECAUCIONES MIENTRAS SE OBTIENE LA FDS</h3>
+    <p>Manipular con gafas o careta, guantes y ropa de protección química, como en el resto de la dosificación de la lavadora. Evitar el contacto con ojos y piel.</p>
+    <p>EN CASO DE CONTACTO CON LOS OJOS O LA PIEL: aclarar con abundante agua durante varios minutos y consultar a un médico si aparece irritación.</p>
+    <p>Conservar en el envase original cerrado.</p>
+  </div>
+  <div class="foot">
+    <span class="vol">VOLUMEN:</span>
+    <span><i>Presentaciones del fabricante: bidón 23 kg · tambor 230 kg · contenedor 1200 kg.</i>
+    <i style="font-size:17px;margin-top:4px">Fabricante: Diversey (actualmente parte de Solenis). Fuente: información comercial del producto; sin FDS pública.</i></span>
+  </div>
+</div></div>
+</body></html>

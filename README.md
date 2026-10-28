@@ -40,7 +40,9 @@ Abre `index.html` en Chrome, Edge o Firefox (doble clic basta; también funciona
 
 ## Pendientes del ejemplo
 
-- **Fichas sin etiqueta en el PDF**: ALCOHOL y DIVOBRITE muestran «Ficha pendiente».
+- **Fichas creadas aparte** (no estaban en el PDF SGA; fuente editable en `tools/fichas_extra/etiquetas.html`, sin teléfono de emergencia):
+  - ALCOHOL: elaborada con la FDS pública de etanol 70 %. Confirmar que el alcohol de planta es etanol 70 %.
+  - DIVOBRITE: **provisional**. El fabricante no publica la FDS; solicitarla al proveedor y reemplazar la ficha.
 - **Ubicación del kit antiderrame (L2)**: se colocó de forma aproximada en el lado izquierdo del plano; conviene confirmarla.
 - Los nombres de las áreas se dedujeron de las fotos y del PowerPoint, y la posición de áreas y pictogramas se trasladó a mano desde el layout del PowerPoint a los planos nuevos. Conviene revisarlos; todo se corrige arrastrando en el editor.
 
