@@ -164,6 +164,11 @@ function MapaViewerRuntime(DATA, ROOT, OPTIONS) {
 /* --- mapas de procesos --- */
 .mv-cnt{flex:none;background:var(--accent-2);color:#2b2000;border-radius:999px;font-size:11px;font-weight:800;padding:0 6px;margin-left:2px}
 .mv-compact .mv-cnt{display:none}
+.mv-procmap .mv-area{border:calc(var(--inv,1)*2.5px) solid #1565c0;background:rgba(21,101,192,.12)}
+.mv-procmap .mv-area:hover,.mv-procmap .mv-area:focus-visible{background:rgba(21,101,192,.26)}
+.mv-procmap .mv-area-tag{background:#1565c0}
+.mv-procmap .mv-area-tag i{background:#fff;color:#1565c0}
+.mv-procmap .mv-area:hover .mv-area-tag{background:var(--head)}
 .mv-pic{flex:none;width:34px;height:34px;border-radius:10px;background:#e8f1fc;color:#1565c0;display:grid;place-items:center}
 .mv-pic svg{width:20px;height:20px}
 .mv-pic.mv-sm{width:26px;height:26px;border-radius:8px}
@@ -501,7 +506,7 @@ function MapaViewerRuntime(DATA, ROOT, OPTIONS) {
     var W = m.bgWidth || 2000, H = m.bgHeight || 1400;
     var wrap = h('div', { style: { position: 'absolute', inset: '0' } });
     var viewport = h('div', { class: 'mv-viewport' });
-    var content = h('div', { class: 'mv-content' });
+    var content = h('div', { class: 'mv-content' + (isProc(m) ? ' mv-procmap' : '') });
     content.appendChild(h('img', { class: 'mv-bg', src: asset(m.background), alt: m.title || m.name || '', draggable: 'false' }));
     var base = W * 0.0165 * (m.markerSize || 1);
 

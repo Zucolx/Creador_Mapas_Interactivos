@@ -46,6 +46,7 @@
     pdf: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6 2h8l5 5v15H6z"/><path d="M14 2v5h5"/><path d="M9 13h1.5a1.5 1.5 0 0 1 0 3H9v-4.5M13.5 16.5v-4.5h1a2 2 0 0 1 0 4.5z"/></svg>',
     help: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17v.5"/></svg>',
     steps: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v2h6V3M8.5 10l1.5 1.5 3-3M8.5 16l1.5 1.5 3-3"/></svg>',
+    edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>',
     flask: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M9 3h6M10 3v6L4.5 19A1.5 1.5 0 0 0 6 21h12a1.5 1.5 0 0 0 1.4-2L14 9V3"/><path d="M7 15h10"/></svg>'
   };
 
@@ -308,11 +309,19 @@
     var scrollEl = left.querySelector('.scroll');
     var top = scrollEl ? scrollEl.scrollTop : 0;
     left.innerHTML = '';
+    var cm = curMap();
+    var procMode = isProc(cm) && ui.view !== 'chem';
+    if (procMode && ui.left === 'chems') ui.left = 'procs';
+    if (!procMode && ui.left === 'procs') ui.left = 'maps';
     left.append(h('div', { class: 'tabs', role: 'tablist' },
       h('button', { role: 'tab', 'aria-selected': String(ui.left === 'maps'), onclick: function () { ui.left = 'maps'; ui.view = 'map'; renderAll(); } }, 'Mapas'),
-      h('button', { role: 'tab', 'aria-selected': String(ui.left === 'chems'), onclick: function () { ui.left = 'chems'; renderLeft(); } }, 'Químicos (' + project.chemicals.length + ')')));
+      procMode
+        ? h('button', { role: 'tab', 'aria-selected': String(ui.left === 'procs'), onclick: function () { ui.left = 'procs'; renderLeft(); } }, 'Áreas y procesos')
+        : h('button', { role: 'tab', 'aria-selected': String(ui.left === 'chems'), onclick: function () { ui.left = 'chems'; renderLeft(); } }, 'Químicos (' + project.chemicals.length + ')')));
     var sc = h('div', { class: 'scroll' });
-    if (ui.left === 'maps') {
+    if (ui.left === 'procs') {
+      renderProcTree(sc, cm);
+    } else if (ui.left === 'maps') {
       sc.append(h('div', { class: 'side-title' }, h('span', null, 'Mapas del proyecto'),
         h('button', { class: 'btn sm', onclick: newMapDialog }, ic('plus'), 'Nuevo')));
       if (!project.maps.length) sc.append(h('p', { class: 'help pad' }, 'Aún no hay mapas. Crea uno nuevo y sube el plano base.'));
@@ -334,10 +343,12 @@
           var list = h('div', { class: 'area-list' });
           m.areas.forEach(function (a) {
             var isSel = ui.sel && ui.sel.type === 'area' && ui.sel.id === a.id;
-            list.append(h('button', { class: 'area-item' + (isSel ? ' sel' : ''), onclick: function () { ui.sel = { type: 'area', id: a.id }; renderAll(); focusArea(a); } },
+            var main = h('button', { class: 'area-main', title: 'Seleccionar y centrar', onclick: function () { ui.sel = { type: 'area', id: a.id }; renderAll(); focusArea(a); } },
               ic(a.photos.length ? 'camera' : 'area'), h('span', { class: 'grow' }, a.name || 'Área'),
               isProc(m) ? h('span', { class: 'badge ' + (a.processes.length ? 'blue' : 'warn') }, a.processes.length + ' proc.') : null,
-              a.photos.length ? null : h('span', { class: 'badge warn' }, 'Foto pend.')));
+              a.photos.length ? null : h('span', { class: 'badge warn' }, 'Foto pend.'));
+            list.append(h('div', { class: 'area-item' + (isSel ? ' sel' : '') }, main,
+              h('button', { class: 'rename', title: 'Renombrar área', 'aria-label': 'Renombrar ' + (a.name || 'área'), onclick: function () { inlineRename(main, a.name, function (v) { a.name = v; }); } }, ic('edit'))));
           });
           card.append(list);
         }
@@ -368,6 +379,70 @@
     left.append(sc);
     sc.scrollTop = top;
   }
+  /* Reemplaza un elemento por un campo de texto para renombrar en el sitio. */
+  function inlineRename(holder, current, onSave) {
+    var inp = h('input', { class: 'inline-rename', value: current || '', 'aria-label': 'Nuevo nombre' });
+    holder.replaceWith(inp);
+    inp.focus({ preventScroll: true }); inp.select();
+    var done = false;
+    function finish(save) {
+      if (done) return; done = true;
+      var v = inp.value.trim();
+      if (save && v && v !== current) { commit(function () { onSave(v); }); toast('Nombre actualizado'); }
+      else renderAll();
+    }
+    inp.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+      else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finish(false); }
+    });
+    inp.addEventListener('blur', function () { finish(true); });
+  }
+
+  /* Pestaña «Áreas y procesos» de un mapa de procesos. */
+  function renderProcTree(sc, m) {
+    var q = h('input', { type: 'search', placeholder: 'Buscar área o proceso…', value: ui.procQuery || '', 'aria-label': 'Buscar área o proceso' });
+    var box = h('div', { class: 'tree' });
+    q.addEventListener('input', function () { ui.procQuery = q.value; fill(); });
+    function fill() {
+      box.innerHTML = '';
+      var qq = norm(ui.procQuery);
+      var shown = 0;
+      m.areas.forEach(function (a) {
+        var areaHit = !qq || norm(a.name).indexOf(qq) >= 0;
+        var procs = a.processes.filter(function (pr) { return areaHit || norm(pr.name).indexOf(qq) >= 0; });
+        if (!areaHit && !procs.length) return;
+        shown++;
+        var isSel = ui.sel && ui.sel.type === 'area' && ui.sel.id === a.id;
+        var open = h('button', { class: 'tree-open', title: 'Seleccionar y centrar en el plano', onclick: function () { ui.sel = { type: 'area', id: a.id }; renderAll(); focusArea(a); } },
+          ic('area'), h('span', { class: 'grow' }, a.name || 'Área'),
+          h('span', { class: 'badge ' + (a.processes.length ? 'blue' : 'warn') }, a.processes.length ? a.processes.length + ' proc.' : 'sin procesos'));
+        var node = h('div', { class: 'tree-area' + (isSel ? ' sel' : '') },
+          h('div', { class: 'tree-head' }, open,
+            h('button', { class: 'rename', title: 'Renombrar área', 'aria-label': 'Renombrar ' + (a.name || 'área'), onclick: function () { inlineRename(open, a.name, function (v) { a.name = v; }); } }, ic('edit'))));
+        procs.forEach(function (pr) {
+          var i = a.processes.indexOf(pr);
+          node.append(h('button', { class: 'tree-proc', title: 'Editar proceso', onclick: function () { ui.sel = { type: 'area', id: a.id }; openProcessEditor(m, a, pr.id); } },
+            h('span', { class: 'step-num sm' }, String(i + 1)), h('span', { class: 'grow' }, pr.name || 'Proceso'),
+            h('small', null, pr.steps.length + (pr.steps.length === 1 ? ' paso' : ' pasos'))));
+        });
+        node.append(h('button', { class: 'tree-add', onclick: function () {
+          var pr = newProcess();
+          commit(function () { a.processes.push(pr); ui.sel = { type: 'area', id: a.id }; });
+          openProcessEditor(m, a, pr.id);
+        } }, ic('plus'), 'Agregar proceso'));
+        box.append(node);
+      });
+      if (!m.areas.length) box.append(h('div', { class: 'pending-box', style: { margin: '8px' } }, ic('area'), 'Este mapa aún no tiene áreas. Pulsa «+ Área» y dibuja un rectángulo sobre el plano.'));
+      else if (!shown) box.append(h('p', { class: 'help pad' }, 'Sin resultados.'));
+    }
+    fill();
+    sc.append(h('div', { class: 'side-title' }, h('span', null, 'Áreas del mapa (' + m.areas.length + ')'),
+        h('button', { class: 'btn sm', title: 'Dibujar una nueva área en el plano', onclick: function () { ui.view = 'map'; setTool('area'); toast('Dibuja el área arrastrando sobre el plano'); } }, ic('plus'), 'Área')),
+      h('div', { class: 'search', style: { 'padding-top': 0 } }, q),
+      box,
+      h('p', { class: 'help pad' }, 'Toca ✎ para renombrar un área. Toca un proceso para editar sus pasos.'));
+  }
+
   function usageCount(chemId) {
     var n = 0;
     project.maps.forEach(function (m) { m.markers.forEach(function (mk) { if (mk.chem === chemId) n++; }); });
@@ -415,7 +490,7 @@
       isProc(m) ? null : chemSel,
       toolBtn('label', 'text', 'Texto', 'T'),
       h('span', { class: 'tool-hint' }, hints[ui.tool]));
-    var canvas = h('div', { class: 'canvas t-' + ui.tool });
+    var canvas = h('div', { class: 'canvas t-' + ui.tool + (isProc(m) ? ' proc' : '') });
     center.append(toolbar, canvas);
     if (!m.background) {
       var drop = h('div', { class: 'drop' }, ic('image'), h('b', null, 'Sube el plano base de «' + (m.name || 'mapa') + '»'),
@@ -503,7 +578,7 @@
       var el = h('div', { class: 'ed-area' + (sel ? ' sel' : ''), 'data-kind': 'area', 'data-id': a.id,
         style: { left: a.x + '%', top: a.y + '%', width: a.w + '%', height: a.h + '%' } },
         h('span', { class: 'ed-area-tag' }, a.name || 'Área',
-          isProc(m) ? h('span', { class: 'badge blue' }, a.processes.length + ' proc.') : null,
+          isProc(m) ? h('span', { class: 'badge ' + (a.processes.length ? 'blue' : 'warn') }, a.processes.length ? a.processes.length + (a.processes.length === 1 ? ' proceso' : ' procesos') : 'sin procesos') : null,
           a.photos.length ? null : h('span', { class: 'badge warn' }, 'foto pend.')));
       if (sel) ['nw', 'ne', 'sw', 'se'].forEach(function (k) { el.append(h('span', { class: 'handle ' + k, 'data-kind': 'handle', 'data-h': k })); });
       ov.append(el);
@@ -855,14 +930,16 @@
           });
         } }, ic('x'))));
     });
-    right.append(
-      inspHead(h('span', { class: 'ed-logo', style: { width: '30px', height: '30px' }, html: ICON.area }), a.name || 'Área', 'Área clicable', deselect),
-      h('div', { class: 'sec' }, field('Nombre del área', name), field('Descripción (opcional)', desc)),
+    append(right, [
+      inspHead(h('span', { class: 'ed-logo', style: { width: '30px', height: '30px' }, html: ICON.area }), a.name || 'Área', isProc(m) ? 'Área del mapa de procesos' : 'Área clicable', deselect),
+      h('div', { class: 'sec' }, field('Nombre del área', name), field('Descripción (opcional)', desc),
+        h('p', { class: 'help', style: { margin: 0 } }, 'También puedes renombrar con ✎ en la lista de áreas o con doble clic sobre el área en el plano.')),
+      isProc(m) ? processesSection(m, a) : null,
       h('div', { class: 'sec' }, h('h4', null, h('span', null, 'Fotos del área'), a.photos.length ? h('span', { class: 'badge ok' }, a.photos.length) : h('span', { class: 'badge warn' }, 'Pendiente')),
         a.photos.length ? photos : h('div', { class: 'pending-box' }, ic('camera'), 'Foto pendiente. En el mapa exportado se mostrará «Foto pendiente» hasta que la agregues.'),
         h('button', { class: 'btn block', style: { 'margin-top': '8px' }, onclick: function () { addPhotos(a); } }, ic('plus'), 'Agregar fotos…'),
         a.photos.length && !isProc(m) ? h('p', { class: 'help', style: { 'margin-top': '6px' } }, 'Toca una foto para ubicar sobre ella los pictogramas de los químicos.') : null),
-      isProc(m) ? processesSection(m, a) : h('div', { class: 'sec' }, h('h4', null, 'Sustancias en esta área'), chips,
+      isProc(m) ? null : h('div', { class: 'sec' }, h('h4', null, 'Sustancias en esta área'), chips,
         chemSelect('', function (cid) { commit(function () { if (a.chems.indexOf(cid) < 0) a.chems.push(cid); }); }, '+ Agregar sustancia al área…', a.chems),
         h('p', { class: 'help', style: { 'margin-top': '6px' } }, 'Usa el botón ◎ para colocar el pictograma de esa sustancia en el plano.')),
       h('div', { class: 'sec' }, h('div', { class: 'row wrap' },
@@ -876,7 +953,7 @@
             m.markers = m.markers.filter(function (mk) { return mk.area !== a.id; });
             ui.sel = null;
           });
-        } }, ic('trash'), 'Eliminar área'))));
+        } }, ic('trash'), 'Eliminar área')))]);
   }
 
   // ---------------------------------------------------------------- procesos

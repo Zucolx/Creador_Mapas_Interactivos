@@ -115,7 +115,13 @@ svg { display: block; }
 .map-card b { display: block; font-size: 14px; }
 .map-card small { display: block; color: var(--muted); font-size: 12px; }
 .area-list { border-top: 1px solid var(--line); padding: 4px; background: #fafbfc; }
-.area-item { display: flex; align-items: center; gap: 8px; width: 100%; border: 0; background: none; text-align: left; padding: 6px 8px; border-radius: 8px; font-size: 13px; }
+.area-item { display: flex; align-items: center; width: 100%; border-radius: 8px; }
+.area-main { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; border: 0; background: none; text-align: left; padding: 6px 8px; font-size: 13px; border-radius: 8px; }
+.area-item.sel .area-main { font-weight: 600; }
+.rename { flex: none; border: 0; background: none; color: var(--muted); padding: 5px; border-radius: 6px; opacity: .55; }
+.rename:hover, .rename:focus-visible { opacity: 1; background: #fff; color: var(--blue); }
+.rename svg { width: 15px; height: 15px; }
+.inline-rename { flex: 1; min-width: 0; margin: 2px 4px; border: 2px solid var(--blue); border-radius: 7px; padding: 5px 8px; font-size: 13px; }
 .area-item:hover { background: #fff; }
 .area-item.sel { background: var(--accent-soft); font-weight: 600; }
 .area-item .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -347,3 +353,31 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent-2); 
 .bulk summary { cursor: pointer; font-weight: 600; }
 .bulk textarea { width: 100%; margin-top: 8px; border: 1px solid var(--line-2); border-radius: 8px; padding: 8px; }
 @media (max-width: 820px) { .step-card { grid-template-columns: auto minmax(0,1fr); } .step-img { grid-column: 2; } }
+
+/* ---------- árbol «Áreas y procesos» ---------- */
+.tree { padding: 2px 8px 4px; display: grid; gap: 8px; }
+.tree-area { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #fff; }
+.tree-area.sel { border-color: var(--blue); box-shadow: 0 0 0 2px #e8f1fc; }
+.tree-head { display: flex; align-items: center; background: #f7f9fc; border-bottom: 1px solid var(--line); }
+.tree-open { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; border: 0; background: none; text-align: left; padding: 8px 6px 8px 10px; font-weight: 600; font-size: 13.5px; }
+.tree-open .grow { overflow-wrap: anywhere; line-height: 1.25; }
+.tree-open .badge { font-size: 10px; padding: 1px 5px; flex: none; }
+.tree-open svg { width: 16px; height: 16px; color: var(--blue); flex: none; }
+.tree-open:hover { color: var(--blue); }
+.tree-proc { display: flex; align-items: center; gap: 8px; width: 100%; border: 0; background: none; text-align: left; padding: 6px 10px; font-size: 13px; border-bottom: 1px solid #f0f2f5; }
+.tree-proc:hover { background: #f3f7fd; }
+.tree-proc .grow { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tree-proc small { color: var(--muted); font-size: 11.5px; white-space: nowrap; }
+.tree-add { display: flex; align-items: center; gap: 6px; width: 100%; border: 0; background: none; color: var(--blue); font-weight: 600; font-size: 12.5px; padding: 7px 10px; text-align: left; }
+.tree-add:hover { background: #f3f7fd; }
+.tree-add svg { width: 15px; height: 15px; }
+.tree-head .inline-rename { margin: 6px; }
+.step-num.sm { width: 20px; height: 20px; font-size: 11px; background: var(--blue); }
+
+/* ---------- áreas en mapas de procesos (más visibles) ---------- */
+.canvas.proc .ed-area { border: calc(var(--inv) * 2.5px) solid var(--blue); background: rgba(21,101,192,.14); }
+.canvas.proc .ed-area:hover { background: rgba(21,101,192,.24); }
+.canvas.proc .ed-area.sel { border-color: var(--accent); background: rgba(242,201,76,.28); box-shadow: 0 0 0 calc(var(--inv) * 3px) rgba(242,201,76,.45); }
+.canvas.proc .ed-area-tag { background: var(--blue); font-size: 13px; padding: 3px 9px; }
+.canvas.proc .ed-area.sel .ed-area-tag { background: var(--head); }
+.canvas.proc .ed-area-tag .badge.blue { background: #fff; }

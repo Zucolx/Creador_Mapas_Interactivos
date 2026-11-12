@@ -151,7 +151,7 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
 <table>
   <tr><th>Zona</th><th>Qué contiene</th></tr>
   <tr><td><b>Cabecera</b></td><td>Nombre del proyecto (editable), estado de guardado, <span class="ui">Deshacer</span> / <span class="ui">Rehacer</span>, <span class="ui">Vista previa</span>, <span class="ui">Exportar HTML</span>, <span class="ui">Proyecto</span> y <span class="ui">Ayuda</span>.</td></tr>
-  <tr><td><b>Panel izquierdo</b></td><td>Pestaña <b>Mapas</b>: lista de mapas y, debajo del mapa activo, sus áreas (con aviso de <span class="ui">Foto pend.</span>). Pestaña <b>Químicos</b>: la biblioteca de sustancias.</td></tr>
+  <tr><td><b>Panel izquierdo</b></td><td>Pestaña <b>Mapas</b>: lista de mapas (con botones Clonar y Eliminar) y, debajo del mapa activo, sus áreas (✎ para renombrar). La segunda pestaña depende del tipo de mapa activo: <b>Químicos</b> (biblioteca de sustancias) en mapas de químicos, o <b>Áreas y procesos</b> en mapas de procesos.</td></tr>
   <tr><td><b>Barra de herramientas</b></td><td>Seleccionar, Área, Pictograma (con la lista de sustancias) y Texto. A la derecha, una ayuda breve de la herramienta activa.</td></tr>
   <tr><td><b>Lienzo</b></td><td>El plano con áreas, pictogramas y textos. Botones de zoom abajo a la derecha.</td></tr>
   <tr><td><b>Panel derecho</b></td><td>Propiedades de lo seleccionado: del mapa (si no hay nada seleccionado), de un área, de un pictograma o de un texto.</td></tr>
@@ -216,8 +216,9 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
 <figure><img src="img/ed-dibujar.webp" alt="Dibujando un área" loading="lazy"><figcaption>Dibujando un área nueva.</figcaption></figure>
 <figure><img src="img/ed-area-nueva.webp" alt="Área recién creada" loading="lazy"><figcaption>Área creada: se escribe el nombre en el panel derecho.</figcaption></figure>
 </div>
-<h4>Mover, redimensionar y eliminar</h4>
+<h4>Renombrar, mover, redimensionar y eliminar</h4>
 <ul>
+  <li><b>Renombrar</b>: pulsa ✎ junto al área en la lista del panel izquierdo, escribe el nombre y pulsa <kbd>Enter</kbd> (<kbd>Esc</kbd> cancela). También desde el campo <b>Nombre del área</b> del panel derecho, o con doble clic sobre el área en el plano.</li>
   <li><b>Mover</b>: con <span class="ui">Seleccionar</span> (<kbd>V</kbd>), arrastra el área. Sus pictogramas se mueven con ella.</li>
   <li><b>Redimensionar</b>: arrastra los cuadritos azules de las esquinas del área seleccionada.</li>
   <li><b>Ir a un área</b>: haz clic en su nombre en el panel izquierdo; el botón <span class="ui">Centrar</span> la enfoca en el lienzo.</li>
@@ -291,6 +292,20 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
 </ul>
 
 <h3 id="pr-editar">8.2 Agregar procesos y pasos</h3>
+<p>Cuando el mapa activo es de procesos, el panel izquierdo cambia: la pestaña <b>Químicos</b> se reemplaza por <b>Áreas y procesos</b>. Ahí se ven todas las áreas con sus procesos debajo, y se puede:</p>
+<div class="duo">
+<ul>
+  <li><b>Crear un área</b>: botón <span class="ui">+ Área</span> y dibujar el rectángulo en el plano.</li>
+  <li><b>Renombrar un área</b>: botón ✎, escribir y <kbd>Enter</kbd>.</li>
+  <li><b>Ir a un área</b>: tocar su nombre (la selecciona y la centra en el plano).</li>
+  <li><b>Agregar un proceso</b>: <span class="ui">+ Agregar proceso</span> debajo del área.</li>
+  <li><b>Editar un proceso</b>: tocar su nombre.</li>
+  <li><b>Buscar</b> un área o proceso por nombre.</li>
+</ul>
+<figure class="phone"><img src="img/ed-arbol-procesos.webp" alt="Pestaña Áreas y procesos" loading="lazy"><figcaption>Pestaña «Áreas y procesos»: cada área con su contador y sus procesos.</figcaption></figure>
+</div>
+<p>En el plano, las áreas de un mapa de procesos se ven en azul con su nombre y el número de procesos («sin procesos» en naranja si aún no tiene).</p>
+<p>Paso a paso desde el panel del área:</p>
 <ol class="steps">
   <li>Selecciona el área (en el plano o en la lista de la izquierda). En el panel derecho aparece <b>Procesos de esta área</b>.</li>
   <li>Pulsa <span class="ui">+ Nuevo proceso</span>. Se abre el editor del proceso.</li>
@@ -300,7 +315,7 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
   <li>Pulsa <span class="ui">Listo</span>. En el panel del área puedes reabrir, ordenar, duplicar o eliminar cada proceso.</li>
 </ol>
 <figure><img src="img/ed-proceso.webp" alt="Editor de un proceso" loading="lazy"><figcaption>Editor del proceso: datos generales y pasos (el 2.º marcado como crítico, el 3.º con imagen).</figcaption></figure>
-<figure><img src="img/ed-area-procesos.webp" alt="Panel de un área con procesos" loading="lazy"><figcaption>Área seleccionada en un mapa de procesos: lista de procesos y botón «Nuevo proceso». En la lista de áreas se ve cuántos procesos tiene cada una.</figcaption></figure>
+<figure><img src="img/ed-area-procesos.webp" alt="Panel de un área con procesos" loading="lazy"><figcaption>Área seleccionada en un mapa de procesos: en el panel derecho, primero sus procesos y luego sus fotos.</figcaption></figure>
 <div class="warn"><b>Contenido oficial</b>Copia los pasos del procedimiento aprobado de la planta y anota su código en «Referencia», para que quien lo consulte sepa de qué documento sale.</div>
 
 <h3 id="pr-ver">8.3 Cómo se consulta un mapa de procesos</h3>
