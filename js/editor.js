@@ -45,6 +45,7 @@
     copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V3H3v13h5"/></svg>',
     pdf: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6 2h8l5 5v15H6z"/><path d="M14 2v5h5"/><path d="M9 13h1.5a1.5 1.5 0 0 1 0 3H9v-4.5M13.5 16.5v-4.5h1a2 2 0 0 1 0 4.5z"/></svg>',
     help: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17v.5"/></svg>',
+    steps: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v2h6V3M8.5 10l1.5 1.5 3-3M8.5 16l1.5 1.5 3-3"/></svg>',
     flask: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M9 3h6M10 3v6L4.5 19A1.5 1.5 0 0 0 6 21h12a1.5 1.5 0 0 0 1.4-2L14 9V3"/><path d="M7 15h10"/></svg>'
   };
 
@@ -143,6 +144,8 @@
   function selMarker() { var m = curMap(); return m && ui.sel && ui.sel.type === 'marker' ? m.markers.filter(function (x) { return x.id === ui.sel.id; })[0] : null; }
   function selLabel() { var m = curMap(); return m && ui.sel && ui.sel.type === 'label' ? (m.labels || []).filter(function (x) { return x.id === ui.sel.id; })[0] : null; }
   function addAsset(data, prefix) { var id = uid(prefix || 'img'); project.assets[id] = data; return id; }
+  function isProc(m) { return !!m && m.type === 'procesos'; }
+  function procCount(m) { var n = 0; m.areas.forEach(function (a) { n += a.processes.length; }); return n; }
   function sortedChems() { return project.chemicals.slice().sort(function (a, b) { return a.name.localeCompare(b.name, 'es'); }); }
 
   function normalizeProject(p) {
@@ -150,9 +153,14 @@
     p.chemicals = p.chemicals || []; p.maps = p.maps || []; p.assets = p.assets || {};
     p.chemicals.forEach(function (c) { c.fichas = c.fichas || []; c.fill = c.fill || '#ffffff'; c.ring = c.ring || '#000000'; });
     p.maps.forEach(function (m) {
+      m.type = m.type === 'procesos' ? 'procesos' : 'quimicos';
       m.areas = m.areas || []; m.markers = m.markers || []; m.labels = m.labels || [];
       m.markerSize = m.markerSize || 1;
-      m.areas.forEach(function (a) { a.photos = a.photos || []; a.chems = a.chems || []; a.photos.forEach(function (ph) { ph.pins = ph.pins || []; }); });
+      m.areas.forEach(function (a) {
+        a.photos = a.photos || []; a.chems = a.chems || []; a.processes = a.processes || [];
+        a.photos.forEach(function (ph) { ph.pins = ph.pins || []; });
+        a.processes.forEach(function (pr) { pr.steps = pr.steps || []; });
+      });
     });
     return p;
   }
@@ -312,17 +320,23 @@
         var active = m.id === ui.mapId && ui.view === 'map';
         var pend = m.areas.filter(function (a) { return !a.photos.length; }).length;
         var card = h('div', { class: 'map-card' + (active ? ' active' : '') },
-          h('button', { onclick: function () { ui.mapId = m.id; ui.view = 'map'; ui.sel = null; renderAll(); } },
-            h('span', { class: 'map-thumb', style: { 'background-image': m.background ? 'url("' + project.assets[m.background] + '")' : null } }),
-            h('span', { class: 'grow' }, h('b', null, m.name || 'Sin nombre'),
-              h('small', null, m.areas.length + ' áreas · ' + m.markers.length + ' pictogramas'),
-              pend ? h('span', { class: 'badge warn' }, pend + ' fotos pendientes') : null)));
+          h('div', { class: 'map-card-row' },
+            h('button', { class: 'map-open', onclick: function () { ui.mapId = m.id; ui.view = 'map'; ui.sel = null; renderAll(); } },
+              h('span', { class: 'map-thumb', style: { 'background-image': m.background ? 'url("' + project.assets[m.background] + '")' : null } }),
+              h('span', { class: 'grow' }, h('b', null, m.name || 'Sin nombre'),
+                h('span', { class: 'badge ' + (isProc(m) ? 'blue' : 'grey') }, isProc(m) ? 'Procesos' : 'Químicos'),
+                h('small', null, m.areas.length + ' áreas · ' + (isProc(m) ? procCount(m) + ' procesos' : m.markers.length + ' pictogramas')),
+                pend ? h('span', { class: 'badge warn' }, pend + ' fotos pendientes') : null)),
+            h('div', { class: 'map-acts' },
+              h('button', { class: 'btn icon ghost', title: 'Clonar mapa', 'aria-label': 'Clonar ' + (m.name || 'mapa'), onclick: function () { cloneMapDialog(m); } }, ic('copy')),
+              h('button', { class: 'btn icon ghost danger', title: 'Eliminar mapa', 'aria-label': 'Eliminar ' + (m.name || 'mapa'), onclick: function () { deleteMap(m); } }, ic('trash')))));
         if (active && m.areas.length) {
           var list = h('div', { class: 'area-list' });
           m.areas.forEach(function (a) {
             var isSel = ui.sel && ui.sel.type === 'area' && ui.sel.id === a.id;
             list.append(h('button', { class: 'area-item' + (isSel ? ' sel' : ''), onclick: function () { ui.sel = { type: 'area', id: a.id }; renderAll(); focusArea(a); } },
               ic(a.photos.length ? 'camera' : 'area'), h('span', { class: 'grow' }, a.name || 'Área'),
+              isProc(m) ? h('span', { class: 'badge ' + (a.processes.length ? 'blue' : 'warn') }, a.processes.length + ' proc.') : null,
               a.photos.length ? null : h('span', { class: 'badge warn' }, 'Foto pend.')));
           });
           card.append(list);
@@ -390,11 +404,15 @@
       marker: ui.toolChem ? 'Clic en el plano para colocar «' + (chem(ui.toolChem) || {}).name + '». Esc para terminar' : 'Elige la sustancia en la lista para colocar pictogramas',
       label: 'Clic en el plano para añadir un texto (p. ej. «Usted está aquí»)'
     };
+    if (isProc(m)) {
+      if (ui.tool === 'marker') ui.tool = 'select';
+      hints.area = 'Dibuja un rectángulo para delimitar un área; luego agrégale sus procesos en el panel derecho';
+    }
     var toolbar = h('div', { class: 'toolbar' },
       toolBtn('select', 'select', 'Seleccionar', 'V'),
       toolBtn('area', 'area', 'Área', 'A'),
-      toolBtn('marker', 'marker', 'Pictograma', 'P'),
-      chemSel,
+      isProc(m) ? null : toolBtn('marker', 'marker', 'Pictograma', 'P'),
+      isProc(m) ? null : chemSel,
       toolBtn('label', 'text', 'Texto', 'T'),
       h('span', { class: 'tool-hint' }, hints[ui.tool]));
     var canvas = h('div', { class: 'canvas t-' + ui.tool });
@@ -427,6 +445,7 @@
   }
 
   function setTool(t) {
+    if (t === 'marker' && isProc(curMap())) return;
     ui.tool = t;
     if (t === 'marker' && !ui.toolChem) {
       var a = selArea();
@@ -483,7 +502,9 @@
       var sel = ui.sel && ui.sel.type === 'area' && ui.sel.id === a.id;
       var el = h('div', { class: 'ed-area' + (sel ? ' sel' : ''), 'data-kind': 'area', 'data-id': a.id,
         style: { left: a.x + '%', top: a.y + '%', width: a.w + '%', height: a.h + '%' } },
-        h('span', { class: 'ed-area-tag' }, a.name || 'Área', a.photos.length ? null : h('span', { class: 'badge warn' }, 'foto pend.')));
+        h('span', { class: 'ed-area-tag' }, a.name || 'Área',
+          isProc(m) ? h('span', { class: 'badge blue' }, a.processes.length + ' proc.') : null,
+          a.photos.length ? null : h('span', { class: 'badge warn' }, 'foto pend.')));
       if (sel) ['nw', 'ne', 'sw', 'se'].forEach(function (k) { el.append(h('span', { class: 'handle ' + k, 'data-kind': 'handle', 'data-h': k })); });
       ov.append(el);
     });
@@ -726,6 +747,7 @@
     size.addEventListener('pointerdown', function () { snapS = snapshot(); });
     size.addEventListener('input', function () { if (snapS) { pushUndo(snapS); snapS = null; } m.markerSize = parseFloat(size.value); applyView(); scheduleSave(); });
     var pendAreas = m.areas.filter(function (a) { return !a.photos.length; });
+    if (isProc(m)) return renderProcMapPanel(m, name, title, sub, pendAreas);
     var used = Array.from(Exporter.chemsOfMap(m)).map(chem).filter(Boolean);
     var noFicha = used.filter(function (c) { return !c.fichas.length; });
     right.append(
@@ -756,11 +778,40 @@
       h('div', { class: 'sec' }, h('div', { class: 'row wrap' },
         h('button', { class: 'btn', onclick: function () { openPreview([m.id]); } }, ic('eye'), 'Vista previa'),
         h('button', { class: 'btn primary', onclick: function () { exportMaps([m.id]); } }, ic('download'), 'Exportar'),
-        h('button', { class: 'btn', onclick: function () { duplicateMap(m); } }, ic('copy'), 'Duplicar'),
-        h('button', { class: 'btn danger', onclick: function () {
-          if (!confirm('¿Eliminar el mapa «' + m.name + '»? Puedes deshacer con Ctrl+Z.')) return;
-          commit(function () { project.maps = project.maps.filter(function (x) { return x !== m; }); ui.mapId = null; ui.sel = null; });
-        } }, ic('trash'), 'Eliminar'))));
+        h('button', { class: 'btn', onclick: function () { cloneMapDialog(m); } }, ic('copy'), 'Clonar…'),
+        h('button', { class: 'btn danger', onclick: function () { deleteMap(m); } }, ic('trash'), 'Eliminar'))));
+  }
+
+  function renderProcMapPanel(m, name, title, sub, pendAreas) {
+    var nProc = procCount(m), nSteps = 0;
+    var empty = m.areas.filter(function (a) { return !a.processes.length; });
+    var noSteps = [];
+    m.areas.forEach(function (a) { a.processes.forEach(function (pr) { nSteps += pr.steps.length; if (!pr.steps.length) noSteps.push(pr.name || 'Proceso'); }); });
+    right.append(
+      inspHead(h('span', { class: 'ed-logo', style: { width: '30px', height: '30px' }, html: ICON.steps }), m.name || 'Mapa', 'Mapa de procesos'),
+      h('div', { class: 'sec' }, field('Nombre corto (pestaña)', name), field('Título', title), field('Subtítulo', sub)),
+      h('div', { class: 'sec' }, h('h4', null, 'Plano base'),
+        m.background ? h('img', { src: project.assets[m.background], alt: '', style: { width: '100%', border: '1px solid var(--line)', 'border-radius': '8px', display: 'block', 'margin-bottom': '8px' } }) : null,
+        h('button', { class: 'btn block', onclick: function () { pickFiles('image/*').then(function (f) { if (f[0]) setBackground(m, f[0]); }); } }, ic('image'), m.background ? 'Cambiar plano…' : 'Subir plano…')),
+      h('div', { class: 'sec' }, h('h4', null, 'Resumen'),
+        h('div', { class: 'stat' }, h('span', null, 'Áreas'), h('b', null, m.areas.length)),
+        h('div', { class: 'stat' }, h('span', null, 'Procesos'), h('b', null, nProc)),
+        h('div', { class: 'stat' }, h('span', null, 'Pasos en total'), h('b', null, nSteps)),
+        empty.length ? h('div', { style: { 'margin-top': '8px' } }, h('span', { class: 'badge warn' }, empty.length + ' áreas sin procesos'),
+          h('div', { class: 'help', style: { 'margin-top': '4px' } }, empty.map(function (a) { return a.name; }).join(' · '))) : null,
+        noSteps.length ? h('div', { style: { 'margin-top': '8px' } }, h('span', { class: 'badge warn' }, noSteps.length + ' procesos sin pasos'),
+          h('div', { class: 'help', style: { 'margin-top': '4px' } }, noSteps.join(' · '))) : null,
+        pendAreas.length ? h('div', { style: { 'margin-top': '8px' } }, h('span', { class: 'badge warn' }, pendAreas.length + ' áreas con foto pendiente')) : null),
+      h('div', { class: 'sec' }, h('h4', null, 'Cómo editar'),
+        h('p', { class: 'help' }, '1. Herramienta «Área»: delimita cada zona del plano.'),
+        h('p', { class: 'help' }, '2. Selecciona el área: nombre, fotos y «+ Nuevo proceso».'),
+        h('p', { class: 'help' }, '3. En cada proceso escribe sus pasos en orden (puedes pegar una lista, una línea por paso) y marca los pasos críticos.'),
+        h('p', { class: 'help', style: { margin: 0 } }, '4. «Vista previa» y «Exportar HTML».')),
+      h('div', { class: 'sec' }, h('div', { class: 'row wrap' },
+        h('button', { class: 'btn', onclick: function () { openPreview([m.id]); } }, ic('eye'), 'Vista previa'),
+        h('button', { class: 'btn primary', onclick: function () { exportMaps([m.id]); } }, ic('download'), 'Exportar'),
+        h('button', { class: 'btn', onclick: function () { cloneMapDialog(m); } }, ic('copy'), 'Clonar…'),
+        h('button', { class: 'btn danger', onclick: function () { deleteMap(m); } }, ic('trash'), 'Eliminar'))));
   }
 
   function chemSelect(value, onChange, placeholder, excludeIds) {
@@ -778,10 +829,10 @@
     var photos = h('div', { class: 'photos' });
     a.photos.forEach(function (ph, i) {
       photos.append(h('div', { class: 'photo' },
-        h('img', { src: project.assets[ph.img], alt: 'Foto ' + (i + 1), title: 'Ubicar químicos en esta foto', onclick: function () { openPinEditor(m, a, i); } }),
-        ph.pins.length ? h('span', { class: 'pins badge ok' }, ph.pins.length + ' ubicados') : null,
+        h('img', { src: project.assets[ph.img], alt: 'Foto ' + (i + 1), title: isProc(m) ? 'Ampliar' : 'Ubicar químicos en esta foto', onclick: function () { if (isProc(m)) lightbox(project.assets[ph.img]); else openPinEditor(m, a, i); } }),
+        !isProc(m) && ph.pins.length ? h('span', { class: 'pins badge ok' }, ph.pins.length + ' ubicados') : null,
         h('div', { class: 'acts' },
-          h('button', { title: 'Ubicar químicos en la foto', 'aria-label': 'Ubicar químicos', onclick: function () { openPinEditor(m, a, i); } }, ic('pin')),
+          isProc(m) ? h('span') : h('button', { title: 'Ubicar químicos en la foto', 'aria-label': 'Ubicar químicos', onclick: function () { openPinEditor(m, a, i); } }, ic('pin')),
           h('button', { title: 'Mover antes', 'aria-label': 'Mover antes', disabled: i === 0, onclick: function () { commit(function () { a.photos.splice(i - 1, 0, a.photos.splice(i, 1)[0]); }); } }, ic('left')),
           h('button', { title: 'Mover después', 'aria-label': 'Mover después', disabled: i === a.photos.length - 1, onclick: function () { commit(function () { a.photos.splice(i + 1, 0, a.photos.splice(i, 1)[0]); }); } }, ic('right')),
           h('button', { title: 'Eliminar foto', 'aria-label': 'Eliminar foto', onclick: function () { if (confirm('¿Eliminar esta foto?')) commit(function () { a.photos.splice(i, 1); }); } }, ic('trash')))));
@@ -810,15 +861,15 @@
       h('div', { class: 'sec' }, h('h4', null, h('span', null, 'Fotos del área'), a.photos.length ? h('span', { class: 'badge ok' }, a.photos.length) : h('span', { class: 'badge warn' }, 'Pendiente')),
         a.photos.length ? photos : h('div', { class: 'pending-box' }, ic('camera'), 'Foto pendiente. En el mapa exportado se mostrará «Foto pendiente» hasta que la agregues.'),
         h('button', { class: 'btn block', style: { 'margin-top': '8px' }, onclick: function () { addPhotos(a); } }, ic('plus'), 'Agregar fotos…'),
-        a.photos.length ? h('p', { class: 'help', style: { 'margin-top': '6px' } }, 'Toca una foto para ubicar sobre ella los pictogramas de los químicos.') : null),
-      h('div', { class: 'sec' }, h('h4', null, 'Sustancias en esta área'), chips,
+        a.photos.length && !isProc(m) ? h('p', { class: 'help', style: { 'margin-top': '6px' } }, 'Toca una foto para ubicar sobre ella los pictogramas de los químicos.') : null),
+      isProc(m) ? processesSection(m, a) : h('div', { class: 'sec' }, h('h4', null, 'Sustancias en esta área'), chips,
         chemSelect('', function (cid) { commit(function () { if (a.chems.indexOf(cid) < 0) a.chems.push(cid); }); }, '+ Agregar sustancia al área…', a.chems),
         h('p', { class: 'help', style: { 'margin-top': '6px' } }, 'Usa el botón ◎ para colocar el pictograma de esa sustancia en el plano.')),
       h('div', { class: 'sec' }, h('div', { class: 'row wrap' },
         h('button', { class: 'btn', onclick: function () { focusArea(a); } }, ic('fit'), 'Centrar'),
         h('button', { class: 'btn danger', onclick: function () {
           var n = m.markers.filter(function (mk) { return mk.area === a.id; }).length;
-          var msg = '¿Eliminar el área «' + a.name + '»' + (n ? ' y sus ' + n + ' pictogramas' : '') + '? Puedes deshacer con Ctrl+Z.';
+          var msg = '¿Eliminar el área «' + a.name + '»' + (n ? ' y sus ' + n + ' pictogramas' : '') + (a.processes.length ? ' y sus ' + a.processes.length + ' procesos' : '') + '? Puedes deshacer con Ctrl+Z.';
           if (!confirm(msg)) return;
           commit(function () {
             m.areas = m.areas.filter(function (x) { return x !== a; });
@@ -826,6 +877,141 @@
             ui.sel = null;
           });
         } }, ic('trash'), 'Eliminar área'))));
+  }
+
+  // ---------------------------------------------------------------- procesos
+  function newProcess() { return { id: uid('proc'), name: 'Nuevo proceso', desc: '', owner: '', freq: '', ppe: '', source: '', steps: [] }; }
+  function processesSection(m, a) {
+    var list = h('div', { class: 'chips' });
+    a.processes.forEach(function (pr, i) {
+      list.append(h('div', { class: 'chip proc-chip' },
+        h('span', { class: 'step-num' }, String(i + 1)),
+        h('button', { class: 'grow proc-open', title: 'Editar proceso', onclick: function () { openProcessEditor(m, a, pr.id); } },
+          h('b', null, pr.name || 'Proceso'), h('small', null, pr.steps.length + (pr.steps.length === 1 ? ' paso' : ' pasos'))),
+        h('button', { title: 'Subir', 'aria-label': 'Subir', disabled: i === 0, onclick: function () { commit(function () { a.processes.splice(i - 1, 0, a.processes.splice(i, 1)[0]); }); } }, ic('up')),
+        h('button', { title: 'Bajar', 'aria-label': 'Bajar', disabled: i === a.processes.length - 1, onclick: function () { commit(function () { a.processes.splice(i + 1, 0, a.processes.splice(i, 1)[0]); }); } }, ic('down')),
+        h('button', { title: 'Duplicar', 'aria-label': 'Duplicar proceso', onclick: function () { commit(function () { var c = clone(pr); c.id = uid('proc'); c.name = pr.name + ' (copia)'; a.processes.splice(i + 1, 0, c); }); } }, ic('copy')),
+        h('button', { title: 'Eliminar', 'aria-label': 'Eliminar proceso', onclick: function () { if (confirm('¿Eliminar el proceso «' + pr.name + '»? Puedes deshacer con Ctrl+Z.')) commit(function () { a.processes.splice(i, 1); }); } }, ic('x'))));
+    });
+    if (!a.processes.length) list.append(h('div', { class: 'pending-box' }, ic('steps'), 'Esta área todavía no tiene procesos.'));
+    return h('div', { class: 'sec' }, h('h4', null, h('span', null, 'Procesos de esta área'), h('span', { class: 'badge blue' }, a.processes.length)),
+      list,
+      h('button', { class: 'btn primary block', onclick: function () {
+        var pr = newProcess();
+        commit(function () { a.processes.push(pr); });
+        openProcessEditor(m, a, pr.id);
+      } }, ic('plus'), 'Nuevo proceso'),
+      h('p', { class: 'help', style: { 'margin-top': '6px' } }, 'En el mapa exportado, al tocar el área se listan sus procesos; cada proceso muestra sus pasos en orden y se pueden ir marcando.'));
+  }
+
+  /* Editor de un proceso: datos generales y pasos ordenados. */
+  function openProcessEditor(m, a, procId) {
+    function pr() { var mm = project.maps.filter(function (x) { return x.id === m.id; })[0]; var aa = mm && mm.areas.filter(function (x) { return x.id === a.id; })[0]; return aa && aa.processes.filter(function (x) { return x.id === procId; })[0]; }
+    var body = h('div', { class: 'proc-editor' });
+    var dlg = modal('Proceso · ' + a.name, body, [h('button', { class: 'btn primary', onclick: function () { dlg.close(); } }, 'Listo')],
+      { wide: true, onClose: function () { renderAll(); } });
+    var keep = { refresh: function () { } };
+    function draw() {
+      var p = pr();
+      if (!p) { dlg.close(); return; }
+      var top = body.parentNode ? body.parentNode.scrollTop : 0;
+      body.innerHTML = '';
+      var steps = h('ol', { class: 'step-list' });
+      p.steps.forEach(function (st, i) {
+        var txt = bindText(h('textarea', { rows: '2', placeholder: 'Describe el paso ' + (i + 1) + '…' }), function () { return st.text; }, function (v) { st.text = v; }, keep);
+        var note = bindText(h('input', { placeholder: 'Nota o advertencia (opcional)' }), function () { return st.note; }, function (v) { st.note = v; }, keep);
+        var warn = h('input', { type: 'checkbox' }); warn.checked = !!st.warn;
+        warn.addEventListener('change', function () { commit(function () { st.warn = warn.checked; }); draw(); });
+        steps.append(h('li', { class: 'step-card' + (st.warn ? ' warn' : '') },
+          h('div', { class: 'step-side' }, h('span', { class: 'step-num' }, String(i + 1)),
+            h('button', { class: 'btn sm icon', title: 'Subir', 'aria-label': 'Subir paso', disabled: i === 0, onclick: function () { commit(function () { p.steps.splice(i - 1, 0, p.steps.splice(i, 1)[0]); }); draw(); } }, ic('up')),
+            h('button', { class: 'btn sm icon', title: 'Bajar', 'aria-label': 'Bajar paso', disabled: i === p.steps.length - 1, onclick: function () { commit(function () { p.steps.splice(i + 1, 0, p.steps.splice(i, 1)[0]); }); draw(); } }, ic('down'))),
+          h('div', { class: 'step-main' }, txt,
+            h('div', { class: 'row wrap', style: { 'margin-top': '6px' } }, h('div', { class: 'grow', style: { 'min-width': '200px' } }, note),
+              h('label', { class: 'row', style: { gap: '6px', 'font-size': '13px', 'font-weight': '600' } }, warn, 'Paso crítico'))),
+          h('div', { class: 'step-img' },
+            st.img ? h('img', { src: project.assets[st.img], alt: '', title: 'Ampliar', onclick: function () { lightbox(project.assets[st.img]); } }) : null,
+            h('div', { class: 'row', style: { gap: '4px', 'flex-wrap': 'wrap' } },
+              h('button', { class: 'btn sm', onclick: function () {
+                pickFiles('image/*').then(function (fs) {
+                  if (!fs[0]) return;
+                  imageFileToDataUrl(fs[0], 1400, 0.75).then(function (r) { commit(function () { st.img = addAsset(r.data, 'paso'); }); draw(); });
+                });
+              } }, ic('image'), st.img ? 'Cambiar' : 'Imagen'),
+              st.img ? h('button', { class: 'btn sm', title: 'Quitar imagen', onclick: function () { commit(function () { delete st.img; }); draw(); } }, ic('x')) : null,
+              h('button', { class: 'btn sm danger', title: 'Eliminar paso', 'aria-label': 'Eliminar paso', onclick: function () { commit(function () { p.steps.splice(i, 1); }); draw(); } }, ic('trash'))))));
+      });
+      var bulk = h('textarea', { rows: '4', placeholder: 'Pega aquí una lista de pasos, uno por línea. Se quitan numeraciones como «1.», «2)» o viñetas.' });
+      body.append(
+        h('div', { class: 'two' },
+          field('Nombre del proceso', bindText(h('input'), function () { return p.name; }, function (v) { p.name = v; }, keep)),
+          field('Responsable', bindText(h('input', { placeholder: 'p. ej. Operador de lavadora' }), function () { return p.owner; }, function (v) { p.owner = v; }, keep))),
+        h('div', { class: 'two' },
+          field('Frecuencia', bindText(h('input', { placeholder: 'p. ej. Cada cambio de turno' }), function () { return p.freq; }, function (v) { p.freq = v; }, keep)),
+          field('EPP requerido', bindText(h('input', { placeholder: 'p. ej. Gafas, guantes de nitrilo' }), function () { return p.ppe; }, function (v) { p.ppe = v; }, keep))),
+        field('Objetivo / descripción (opcional)', bindText(h('textarea', { rows: '2' }), function () { return p.desc; }, function (v) { p.desc = v; }, keep)),
+        field('Referencia (código de procedimiento, documento…)', bindText(h('input'), function () { return p.source; }, function (v) { p.source = v; }, keep)),
+        h('h4', { class: 'proc-h' }, 'Pasos (' + p.steps.length + ')'),
+        p.steps.length ? steps : h('div', { class: 'pending-box', style: { 'margin-bottom': '10px' } }, 'Todavía no hay pasos. Agrégalos uno a uno o pega una lista.'),
+        h('div', { class: 'row wrap', style: { margin: '10px 0' } },
+          h('button', { class: 'btn primary', onclick: function () { commit(function () { p.steps.push({ text: '', note: '', warn: false }); }); draw(); var t = body.querySelectorAll('.step-card textarea'); if (t.length) t[t.length - 1].focus({ preventScroll: false }); } }, ic('plus'), 'Agregar paso')),
+        h('details', { class: 'bulk' }, h('summary', null, 'Pegar varios pasos a la vez'), bulk,
+          h('button', { class: 'btn', style: { 'margin-top': '6px' }, onclick: function () {
+            var lines = bulk.value.split('\n').map(function (l) { return l.replace(/^\s*(?:\d+\s*[.)\-:]|[-•*·])\s*/, '').trim(); }).filter(Boolean);
+            if (!lines.length) return;
+            commit(function () { lines.forEach(function (l) { p.steps.push({ text: l, note: '', warn: false }); }); });
+            toast(lines.length + (lines.length === 1 ? ' paso agregado' : ' pasos agregados'));
+            draw();
+          } }, ic('plus'), 'Agregar como pasos')));
+      if (body.parentNode) body.parentNode.scrollTop = top;
+    }
+    draw();
+  }
+
+  function cloneMapDialog(m) {
+    var name = h('input', { value: (m.name || 'Mapa') + ' (copia)' });
+    var other = isProc(m) ? 'quimicos' : 'procesos';
+    var mode = 'igual';
+    function opt(val, title, desc) {
+      var r = h('input', { type: 'radio', name: 'clone-mode', value: val }); r.checked = val === mode;
+      r.addEventListener('change', function () { mode = val; });
+      return h('label', { class: 'type-opt' }, r, h('span', null, h('b', null, title), h('small', null, desc)));
+    }
+    var dlg = modal('Clonar «' + (m.name || 'mapa') + '»', h('div', null,
+      field('Nombre del nuevo mapa', name),
+      h('div', { class: 'field' }, h('span', null, 'Tipo de copia'),
+        opt('igual', 'Copia exacta', 'Mismo tipo de mapa, con todo su contenido.'),
+        opt('otro', other === 'procesos' ? 'Como mapa de procesos' : 'Como mapa de químicos',
+          other === 'procesos' ? 'Mismo plano, áreas, fotos y textos; sin químicos. Útil para documentar los procesos de la misma línea.'
+                               : 'Mismo plano, áreas, fotos y textos; sin procesos.'))),
+      [h('button', { class: 'btn', onclick: function () { dlg.close(); } }, 'Cancelar'),
+       h('button', { class: 'btn primary', onclick: function () {
+         dlg.close();
+         commit(function () {
+           var n = clone(m);
+           n.id = uid('mapa'); n.name = name.value.trim() || (m.name + ' (copia)');
+           if (mode === 'otro') {
+             n.type = other;
+             n.markers = [];
+             n.areas.forEach(function (a) { a.chems = []; a.processes = []; a.photos.forEach(function (ph) { ph.pins = []; }); });
+             if (other === 'procesos' && (!m.title || /sustancias/i.test(m.title))) n.title = 'Mapa de procesos';
+             if (other === 'quimicos' && (!m.title || /procesos/i.test(m.title))) n.title = 'Mapa de sustancias químicas';
+           }
+           var idx = project.maps.indexOf(m);
+           project.maps.splice(idx + 1, 0, n); ui.mapId = n.id; ui.view = 'map'; ui.left = 'maps'; ui.sel = null;
+         });
+         toast('Mapa clonado');
+       } }, ic('copy'), 'Clonar')]);
+    name.focus({ preventScroll: true }); name.select();
+  }
+  function deleteMap(m) {
+    var what = isProc(m) ? procCount(m) + ' procesos' : m.markers.length + ' pictogramas';
+    if (!confirm('¿Eliminar el mapa «' + (m.name || 'sin nombre') + '» (' + m.areas.length + ' áreas, ' + what + ')? Puedes deshacer con Ctrl+Z.')) return;
+    commit(function () {
+      project.maps = project.maps.filter(function (x) { return x !== m; });
+      if (ui.mapId === m.id) { ui.mapId = null; ui.sel = null; }
+    });
+    toast('Mapa eliminado · Ctrl+Z para deshacer');
   }
 
   function addPhotos(a) {
@@ -890,10 +1076,22 @@
   function newMapDialog() {
     var name = h('input', { value: 'Línea ' + (project.maps.length + 1) });
     var title = h('input', { value: 'Mapa de sustancias químicas' });
+    var type = 'quimicos';
+    function opt(val, t, d) {
+      var r = h('input', { type: 'radio', name: 'map-type', value: val }); r.checked = val === type;
+      r.addEventListener('change', function () {
+        type = val;
+        if (/^Mapa de (sustancias químicas|procesos)$/.test(title.value)) title.value = val === 'procesos' ? 'Mapa de procesos' : 'Mapa de sustancias químicas';
+      });
+      return h('label', { class: 'type-opt' }, r, h('span', null, h('b', null, t), h('small', null, d)));
+    }
     var sub = h('input', { value: '' });
     var file = null;
     var fileLabel = h('span', { class: 'help', style: { margin: 0 } }, 'Ningún archivo elegido (puedes subirlo después).');
     var dlg = modal('Nuevo mapa', h('div', null,
+      h('div', { class: 'field' }, h('span', null, 'Tipo de mapa'),
+        opt('quimicos', 'Mapa de químicos', 'Áreas con pictogramas de sustancias y fichas SGA.'),
+        opt('procesos', 'Mapa de procesos', 'Áreas delimitadas con los procesos (pasos) que se deben seguir en cada una.')),
       field('Nombre corto (aparece en la pestaña, p. ej. «Línea 3»)', name),
       field('Título', title),
       field('Subtítulo (opcional)', sub),
@@ -901,20 +1099,12 @@
         h('div', { class: 'row' }, h('button', { class: 'btn', onclick: function () { pickFiles('image/*').then(function (f) { file = f[0] || null; fileLabel.textContent = file ? file.name : 'Ningún archivo elegido'; }); } }, ic('image'), 'Elegir imagen…'), fileLabel))),
       [h('button', { class: 'btn', onclick: function () { dlg.close(); } }, 'Cancelar'),
        h('button', { class: 'btn primary', onclick: function () {
-         var m = { id: uid('mapa'), name: name.value.trim() || 'Mapa', title: title.value.trim(), subtitle: sub.value.trim(), background: null, bgWidth: 2000, bgHeight: 1400, markerSize: 1, areas: [], markers: [], labels: [] };
+         var m = { id: uid('mapa'), type: type, name: name.value.trim() || 'Mapa', title: title.value.trim(), subtitle: sub.value.trim(), background: null, bgWidth: 2000, bgHeight: 1400, markerSize: 1, areas: [], markers: [], labels: [] };
          dlg.close();
          commit(function () { project.maps.push(m); ui.mapId = m.id; ui.view = 'map'; ui.left = 'maps'; ui.sel = null; });
          if (file) setBackground(m, file);
        } }, ic('plus'), 'Crear mapa')]);
     name.focus({ preventScroll: true }); name.select();
-  }
-  function duplicateMap(m) {
-    commit(function () {
-      var n = clone(m);
-      n.id = uid('mapa'); n.name = m.name + ' (copia)';
-      project.maps.push(n); ui.mapId = n.id; ui.sel = null;
-    });
-    toast('Mapa duplicado');
   }
 
   // ----------------------------------------------------------------- modales

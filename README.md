@@ -25,6 +25,13 @@ En el teléfono se puede pellizcar para ampliar, arrastrar para moverse, y el bo
 
 El manual completo, con capturas, está en [`manual/index.html`](manual/index.html) (también se abre con el botón **Ayuda** del editor). Incluye una sección para el personal que solo consulta los mapas.
 
+## Tipos de mapa
+
+- **Mapa de químicos**: áreas con pictogramas de sustancias y fichas SGA (como L1 y L2).
+- **Mapa de procesos**: se delimitan áreas y dentro de cada una se agregan los procesos que se deben seguir, con sus pasos en orden (responsable, frecuencia, EPP, pasos críticos e imágenes de apoyo). En el HTML exportado cada paso se puede ir marcando mientras se ejecuta (las marcas no se guardan).
+
+Cada mapa de la lista se puede **clonar** (copia exacta, o como mapa del otro tipo conservando plano, áreas y fotos) o **eliminar** (con deshacer).
+
 ## Usar el editor
 
 Abre `index.html` en Chrome, Edge o Firefox (doble clic basta; también funciona publicado en GitHub Pages). La primera vez se carga el ejemplo L1/L2 y los cambios se guardan solos en el navegador.

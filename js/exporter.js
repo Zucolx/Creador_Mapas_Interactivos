@@ -26,7 +26,10 @@
     function use(id) { if (id && project.assets[id]) assets[id] = project.assets[id]; }
     maps.forEach(function (m) {
       use(m.background);
-      (m.areas || []).forEach(function (a) { (a.photos || []).forEach(function (p) { use(p.img); }); });
+      (m.areas || []).forEach(function (a) {
+        (a.photos || []).forEach(function (p) { use(p.img); });
+        (a.processes || []).forEach(function (pr) { (pr.steps || []).forEach(function (st) { use(st.img); }); });
+      });
     });
     chemicals.forEach(function (c) { (c.fichas || []).forEach(function (f) { use(f.img); }); });
     return JSON.parse(JSON.stringify({ name: project.name, chemicals: chemicals, maps: maps, assets: assets }));
@@ -37,7 +40,10 @@
     var used = new Set();
     project.maps.forEach(function (m) {
       used.add(m.background);
-      (m.areas || []).forEach(function (a) { (a.photos || []).forEach(function (p) { used.add(p.img); }); });
+      (m.areas || []).forEach(function (a) {
+        (a.photos || []).forEach(function (p) { used.add(p.img); });
+        (a.processes || []).forEach(function (pr) { (pr.steps || []).forEach(function (st) { if (st.img) used.add(st.img); }); });
+      });
     });
     project.chemicals.forEach(function (c) { (c.fichas || []).forEach(function (f) { used.add(f.img); }); });
     return used;

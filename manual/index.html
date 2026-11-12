@@ -96,6 +96,8 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
       <ol><li><a href="#area-crear">Crear y ajustar</a></li><li><a href="#area-fotos">Fotos</a></li><li><a href="#area-pines">Químicos en la foto</a></li></ol></li>
     <li><a href="#pictogramas">Pictogramas en el plano</a></li>
     <li><a href="#textos">Textos</a></li>
+    <li><a href="#procesos">Mapas de procesos</a>
+      <ol><li><a href="#pr-crear">Crear o clonar</a></li><li><a href="#pr-editar">Procesos y pasos</a></li><li><a href="#pr-ver">Cómo se consultan</a></li></ol></li>
     <li><a href="#quimicos">Biblioteca de químicos</a>
       <ol><li><a href="#q-colores">Nombre y colores</a></li><li><a href="#q-fichas">Fichas SGA</a></li><li><a href="#q-pdf">Importar desde PDF</a></li></ol></li>
     <li><a href="#previa">Vista previa</a></li>
@@ -119,6 +121,11 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
   <div class="card"><b>2 · Área</b><p>Al tocar un área: foto(s) del lugar, sustancias presentes y ubicación en el plano.</p></div>
   <div class="card"><b>3 · Ficha del químico</b><p>Al tocar un pictograma: etiqueta SGA, palabra de advertencia, frases H, contacto de emergencia y dónde se encuentra.</p></div>
 </div>
+<p>Hay dos <b>tipos de mapa</b>:</p>
+<ul>
+  <li><b>Mapa de químicos</b>: áreas con pictogramas de sustancias y sus fichas SGA (como L1 y L2).</li>
+  <li><b>Mapa de procesos</b>: áreas delimitadas que contienen los <b>procesos que se deben seguir</b> en cada una, con sus pasos en orden (ver <a href="#procesos">sección 8</a>).</li>
+</ul>
 <p>El sistema tiene dos partes:</p>
 <ul>
   <li><b>El editor</b> (<code>index.html</code>): donde la persona responsable crea y mantiene los mapas. Pensado para PC o tablet.</li>
@@ -134,7 +141,7 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
   <li>Haz doble clic en <code>index.html</code>. Se abre en el navegador (Chrome, Edge o Firefox recomendados).</li>
   <li>La primera vez se carga el <b>ejemplo L1 / L2</b>. A partir de ahí, todo lo que cambies se guarda solo en ese navegador; el indicador de la cabecera muestra <span class="ui">Guardado en este navegador</span>.</li>
 </ol>
-<div class="warn"><b>El guardado automático es local</b>Queda en el navegador y equipo donde trabajas. Si cambias de equipo, de navegador o borras los datos de navegación, no lo verás. Para tener una copia segura usa <span class="ui">Proyecto → Guardar proyecto (.json)</span> (ver <a href="#proyecto">sección 11</a>).</div>
+<div class="warn"><b>El guardado automático es local</b>Queda en el navegador y equipo donde trabajas. Si cambias de equipo, de navegador o borras los datos de navegación, no lo verás. Para tener una copia segura usa <span class="ui">Proyecto → Guardar proyecto (.json)</span> (ver <a href="#proyecto">sección 12</a>).</div>
 <p>También puedes acceder desde el botón <span class="ui">? Ayuda</span> de la cabecera del editor para volver a este manual.</p>
 </section>
 
@@ -163,11 +170,12 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
 <h3>Crear un mapa nuevo</h3>
 <ol class="steps">
   <li>En la pestaña <b>Mapas</b> pulsa <span class="ui">+ Nuevo</span>.</li>
+  <li>Elige el <b>tipo de mapa</b>: <b>Mapa de químicos</b> o <b>Mapa de procesos</b>.</li>
   <li>Escribe el <b>nombre corto</b> (es el que aparece en la pestaña del mapa exportado, p. ej. «Línea 3»), el <b>título</b> y, si quieres, un <b>subtítulo</b>.</li>
   <li>Pulsa <span class="ui">Elegir imagen…</span> y selecciona el plano (PNG, JPG o WebP). Puedes dejarlo para después.</li>
   <li>Pulsa <span class="ui">Crear mapa</span>.</li>
 </ol>
-<figure class="half"><img src="img/ed-nuevo-mapa.webp" alt="Diálogo de nuevo mapa" loading="lazy"><figcaption>Diálogo «Nuevo mapa».</figcaption></figure>
+<figure class="half"><img src="img/ed-nuevo-mapa.webp" alt="Diálogo de nuevo mapa" loading="lazy"><figcaption>Diálogo «Nuevo mapa» con el selector de tipo.</figcaption></figure>
 <div class="tip"><b>Consejo para el plano</b>Usa una imagen nítida de al menos 2000 px de ancho, con fondo blanco. Si tienes el plano en PDF o CAD, expórtalo antes como imagen PNG. Deja un margen blanco alrededor si quieres ubicar zonas exteriores (tanques, cuartos, bodegas).</div>
 <h3>Propiedades del mapa</h3>
 <p>Con nada seleccionado (pulsa <kbd>Esc</kbd> o haz clic en una zona vacía), el panel derecho muestra el mapa:</p>
@@ -176,8 +184,22 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
   <li><b>Plano base → Cambiar plano…</b>: reemplaza la imagen. Las áreas y pictogramas conservan su posición relativa (en %), así que conviene que el nuevo plano tenga el mismo encuadre.</li>
   <li><b>Tamaño de los pictogramas</b>: los agranda o achica en todo el mapa.</li>
   <li><b>Resumen</b>: número de áreas y pictogramas, áreas con <b>foto pendiente</b> y sustancias <b>sin ficha</b>. Es la lista de tareas pendientes del mapa.</li>
-  <li>Botones <span class="ui">Vista previa</span>, <span class="ui">Exportar</span>, <span class="ui">Duplicar</span> y <span class="ui">Eliminar</span>.</li>
+  <li>Botones <span class="ui">Vista previa</span>, <span class="ui">Exportar</span>, <span class="ui">Clonar…</span> y <span class="ui">Eliminar</span>.</li>
 </ul>
+<h3 id="clonar">Clonar y eliminar mapas</h3>
+<div class="duo">
+<div>
+<p>Cada mapa de la lista del panel izquierdo tiene dos botones a la derecha:</p>
+<ul>
+  <li><b>Clonar</b> (dos hojas): crea una copia. Puedes elegir entre:
+    <ul><li><b>Copia exacta</b>: mismo tipo y todo su contenido. Útil para preparar una versión nueva sin tocar la publicada.</li>
+    <li><b>Como mapa de procesos</b> (o <b>como mapa de químicos</b>): conserva el plano, las áreas, las fotos y los textos, pero sin químicos (o sin procesos). Es la forma más rápida de crear el mapa de procesos de una línea que ya tiene su mapa de químicos.</li></ul></li>
+  <li><b>Eliminar</b> (papelera): borra el mapa tras confirmar. Si fue un error, <kbd>Ctrl</kbd>+<kbd>Z</kbd> lo recupera.</li>
+</ul>
+</div>
+<figure class="phone"><img src="img/ed-lista-mapas.webp" alt="Lista de mapas con botones Clonar y Eliminar" loading="lazy"><figcaption>Lista de mapas: tipo de mapa y botones Clonar / Eliminar.</figcaption></figure>
+</div>
+<figure class="half"><img src="img/ed-clonar.webp" alt="Diálogo Clonar mapa" loading="lazy"><figcaption>Clonar «Línea 2» como mapa de procesos.</figcaption></figure>
 </section>
 
 <section id="areas">
@@ -257,13 +279,51 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
 <p>La herramienta <span class="ui">Texto</span> (<kbd>T</kbd>) añade rótulos sobre el plano, como «USTED ESTÁ AQUÍ» o el nombre de una zona sin área. Haz clic donde quieras, escribe el texto en el panel derecho y ajusta el tamaño. Se mueven arrastrando con Seleccionar.</p>
 </section>
 
+<section id="procesos">
+<h2>8. Mapas de procesos</h2>
+<p>En un mapa de procesos no se colocan químicos: se <b>delimita un área</b> y dentro de ella se agregan los <b>procesos</b> que se deben seguir allí (limpiezas, arranques, cambios de formato, respuesta ante derrames…). Cada proceso tiene sus <b>pasos en orden</b>.</p>
+<p>Por eso la barra de herramientas de estos mapas solo tiene <span class="ui">Seleccionar</span>, <span class="ui">Área</span> y <span class="ui">Texto</span>: no hay pictogramas ni sustancias.</p>
+
+<h3 id="pr-crear">8.1 Crear o clonar un mapa de procesos</h3>
+<ul>
+  <li><b>Desde cero</b>: <span class="ui">+ Nuevo</span> → tipo <b>Mapa de procesos</b> → sube el plano y dibuja las áreas con la herramienta <span class="ui">Área</span>.</li>
+  <li><b>A partir de un mapa de químicos</b> (recomendado si la línea ya está mapeada): <span class="ui">Clonar</span> → <b>Como mapa de procesos</b>. Se conservan plano, áreas y fotos (ver <a href="#clonar">Clonar y eliminar mapas</a>).</li>
+</ul>
+
+<h3 id="pr-editar">8.2 Agregar procesos y pasos</h3>
+<ol class="steps">
+  <li>Selecciona el área (en el plano o en la lista de la izquierda). En el panel derecho aparece <b>Procesos de esta área</b>.</li>
+  <li>Pulsa <span class="ui">+ Nuevo proceso</span>. Se abre el editor del proceso.</li>
+  <li>Completa los datos: <b>nombre</b>, <b>responsable</b>, <b>frecuencia</b>, <b>EPP requerido</b>, <b>objetivo</b> y <b>referencia</b> (código del procedimiento o documento oficial). Solo el nombre es obligatorio.</li>
+  <li>Agrega los pasos con <span class="ui">+ Agregar paso</span>, o abre <b>Pegar varios pasos a la vez</b> y pega una lista (una línea por paso; se quitan solas numeraciones como «1.» o «2)» y viñetas).</li>
+  <li>En cada paso puedes añadir una <b>nota</b>, marcarlo como <b>Paso crítico</b> (se resalta en naranja) y adjuntar una <b>imagen</b> de apoyo. Las flechas ↑ ↓ cambian el orden.</li>
+  <li>Pulsa <span class="ui">Listo</span>. En el panel del área puedes reabrir, ordenar, duplicar o eliminar cada proceso.</li>
+</ol>
+<figure><img src="img/ed-proceso.webp" alt="Editor de un proceso" loading="lazy"><figcaption>Editor del proceso: datos generales y pasos (el 2.º marcado como crítico, el 3.º con imagen).</figcaption></figure>
+<figure><img src="img/ed-area-procesos.webp" alt="Panel de un área con procesos" loading="lazy"><figcaption>Área seleccionada en un mapa de procesos: lista de procesos y botón «Nuevo proceso». En la lista de áreas se ve cuántos procesos tiene cada una.</figcaption></figure>
+<div class="warn"><b>Contenido oficial</b>Copia los pasos del procedimiento aprobado de la planta y anota su código en «Referencia», para que quien lo consulte sepa de qué documento sale.</div>
+
+<h3 id="pr-ver">8.3 Cómo se consulta un mapa de procesos</h3>
+<ul>
+  <li>Al tocar un área se ven sus fotos y la lista <b>Procesos en esta área</b>.</li>
+  <li>Al tocar un proceso se abre con su responsable, frecuencia y EPP, y los pasos numerados. Los pasos críticos aparecen en naranja con su nota; las imágenes se amplían al tocarlas.</li>
+  <li>Cada paso tiene una casilla para <b>ir marcándolo</b> mientras se ejecuta, con una barra de progreso («2 de 4 pasos»). Las marcas son solo de apoyo en pantalla: <b>no se guardan</b> y se pierden al cerrar el archivo.</li>
+  <li>La leyenda tiene las pestañas <b>Procesos</b> (todos los procesos del mapa, con buscador) y <b>Áreas</b>.</li>
+</ul>
+<div class="duo">
+<figure><img src="img/vi-proceso.webp" alt="Proceso abierto en PC" loading="lazy"><figcaption>Proceso abierto en PC, con dos pasos marcados.</figcaption></figure>
+<figure class="phone"><img src="img/tel-proceso.webp" alt="Proceso abierto en teléfono" loading="lazy"><figcaption>El mismo proceso en el teléfono.</figcaption></figure>
+</div>
+<p>Los mapas de procesos se exportan igual que los de químicos (<a href="#exportar">sección 11</a>) y también funcionan en la vista previa de SharePoint. Pueden ir solos o en un mismo HTML junto con mapas de químicos.</p>
+</section>
+
 <section id="quimicos">
-<h2>8. Biblioteca de químicos</h2>
+<h2>9. Biblioteca de químicos</h2>
 <p>La pestaña <b>Químicos</b> del panel izquierdo contiene todas las sustancias, compartidas por todos los mapas. Si actualizas la ficha de un químico, se actualiza en todos los mapas al volver a exportarlos.</p>
 <p>En la lista se ve cuántos pictogramas tiene cada sustancia y cuántas fichas; las que no tienen ficha aparecen con <span class="ui">Ficha pendiente</span>. La ficha de DIVOBRITE es provisional (el fabricante no publica su FDS): conviene reemplazarla cuando el proveedor entregue la FDS.</p>
 <figure><img src="img/ed-quimico.webp" alt="Editor de un químico" loading="lazy"><figcaption>Editor del químico TOPAX 66: nombre, colores del pictograma y fichas.</figcaption></figure>
 
-<h3 id="q-colores">8.1 Crear un químico, nombre y colores</h3>
+<h3 id="q-colores">9.1 Crear un químico, nombre y colores</h3>
 <ol class="steps">
   <li>Pulsa <span class="ui">+ Nuevo</span> en la pestaña Químicos.</li>
   <li>Escribe el nombre tal como aparece en la etiqueta.</li>
@@ -282,7 +342,7 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
 </table>
 <div class="warn"><b>Colores repetidos</b>SU 221 (L1) y DIVOBRITE (L2) comparten colores porque así están en las leyendas de cada línea. No es problema mientras cada mapa no use ambos; si un mismo mapa los necesita, asigna colores distintos.</div>
 
-<h3 id="q-fichas">8.2 Fichas SGA</h3>
+<h3 id="q-fichas">9.2 Fichas SGA</h3>
 <p>Cada químico puede tener una o varias fichas (una por presentación o concentración). En el mapa exportado aparecen como pestañas, por ejemplo «Hidróxido de Sodio 50 % · 1000 Kg» y «2 – 2,5 % · 5200 L».</p>
 <figure><img src="img/ed-fichas.webp" alt="Fichas SGA de un químico" loading="lazy"><figcaption>Fichas de TOPAX 66: imagen de la etiqueta y datos que se muestran como texto.</figcaption></figure>
 <p>Campos de cada ficha:</p>
@@ -297,7 +357,7 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
 </table>
 <p>Para agregar fichas desde imágenes: <span class="ui">Agregar imagen(es)…</span> (PNG, JPG, WebP; puedes elegir varias).</p>
 
-<h3 id="q-pdf">8.3 Importar etiquetas desde un PDF</h3>
+<h3 id="q-pdf">9.3 Importar etiquetas desde un PDF</h3>
 <p>Si las etiquetas están en un PDF (una por página, como <i>ETIQUETAS FORMATO SGA.pdf</i>):</p>
 <ol class="steps">
   <li>Abre un químico y pulsa <span class="ui">Importar desde PDF…</span>, o en la pestaña Químicos pulsa <span class="ui">Importar etiquetas desde PDF</span>.</li>
@@ -315,13 +375,13 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
 </section>
 
 <section id="previa">
-<h2>9. Vista previa</h2>
+<h2>10. Vista previa</h2>
 <p>El botón <span class="ui">Vista previa</span> muestra exactamente el HTML que se va a exportar, sin descargarlo. Arriba puedes cambiar entre <b>PC</b> y <b>Teléfono</b> para comprobar cómo se ve en cada caso, y exportar desde ahí mismo.</p>
 <figure class="half"><img src="img/ed-vista-previa.webp" alt="Vista previa en modo teléfono" loading="lazy"><figcaption>Vista previa en modo teléfono.</figcaption></figure>
 </section>
 
 <section id="exportar">
-<h2>10. Exportar y distribuir</h2>
+<h2>11. Exportar y distribuir</h2>
 <figure class="half"><img src="img/ed-menu-exportar.webp" alt="Menú Exportar HTML" loading="lazy"><figcaption>Menú «Exportar HTML».</figcaption></figure>
 <table>
   <tr><th>Opción</th><th>Resultado</th></tr>
@@ -339,7 +399,7 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
 </section>
 
 <section id="proyecto">
-<h2>11. Guardar y abrir proyectos</h2>
+<h2>12. Guardar y abrir proyectos</h2>
 <figure class="half"><img src="img/ed-menu-proyecto.webp" alt="Menú Proyecto" loading="lazy"><figcaption>Menú «Proyecto».</figcaption></figure>
 <table>
   <tr><th>Opción</th><th>Cuándo usarla</th></tr>
@@ -352,7 +412,7 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
 </section>
 
 <section id="visor">
-<h2>12. Consultar el mapa (personal de planta)</h2>
+<h2>13. Consultar el mapa (personal de planta)</h2>
 <p>Esta sección puede imprimirse o compartirse por separado con quienes solo consultan los mapas.</p>
 <h3>En PC</h3>
 <figure><img src="img/vi-mapa.webp" alt="Mapa exportado de Línea 1 en PC" loading="lazy"><figcaption>Mapa de Línea 1: áreas con su nombre, pictogramas y la leyenda a la derecha.</figcaption></figure>
@@ -384,7 +444,7 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
 </section>
 
 <section id="tareas">
-<h2>13. Tareas frecuentes</h2>
+<h2>14. Tareas frecuentes</h2>
 <h3>Agregar o cambiar las fotos de un área</h3>
 <ol class="steps">
   <li>Pestaña <b>Mapas</b> → elige el mapa. Las áreas sin foto muestran <span class="ui">Foto pend.</span>.</li>
@@ -392,6 +452,13 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
   <li>(Opcional) Toca la foto y ubica los químicos sobre ella.</li>
   <li>Repite con cada área. El resumen del mapa muestra cuántas faltan.</li>
   <li><span class="ui">Exportar HTML</span> → reemplaza el HTML de ese mapa donde esté publicado.</li>
+</ol>
+<h3>Documentar los procesos de una línea</h3>
+<ol class="steps">
+  <li>En la lista de mapas, <span class="ui">Clonar</span> el mapa de químicos de la línea → <b>Como mapa de procesos</b>, con un nombre como «Línea 2 · Procesos».</li>
+  <li>Ajusta las áreas si hace falta (agrega las zonas que solo tienen procesos, elimina las que no aplican).</li>
+  <li>En cada área, <span class="ui">+ Nuevo proceso</span> y pega los pasos del procedimiento oficial.</li>
+  <li>Revisa en <span class="ui">Vista previa</span> (modo Teléfono) y exporta.</li>
 </ol>
 <h3>Llega un químico nuevo a la planta</h3>
 <ol class="steps">
@@ -419,12 +486,12 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
 </section>
 
 <section id="atajos">
-<h2>14. Atajos de teclado (editor)</h2>
+<h2>15. Atajos de teclado (editor)</h2>
 <table>
   <tr><th>Tecla</th><th>Acción</th></tr>
   <tr><td><kbd>V</kbd></td><td>Herramienta Seleccionar</td></tr>
   <tr><td><kbd>A</kbd></td><td>Herramienta Área</td></tr>
-  <tr><td><kbd>P</kbd></td><td>Herramienta Pictograma</td></tr>
+  <tr><td><kbd>P</kbd></td><td>Herramienta Pictograma (solo en mapas de químicos)</td></tr>
   <tr><td><kbd>T</kbd></td><td>Herramienta Texto</td></tr>
   <tr><td><kbd>Esc</kbd></td><td>Volver a Seleccionar / quitar la selección / cerrar diálogos</td></tr>
   <tr><td><kbd>Supr</kbd> o <kbd>Retroceso</kbd></td><td>Eliminar lo seleccionado</td></tr>
@@ -438,7 +505,9 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
 </section>
 
 <section id="faq">
-<h2>15. Problemas y preguntas frecuentes</h2>
+<h2>16. Problemas y preguntas frecuentes</h2>
+<details><summary>¿Se guardan los pasos que marco al seguir un proceso?</summary>
+<p>No. Las casillas de los pasos son una ayuda en pantalla mientras se ejecuta el proceso; el archivo no guarda nada en el equipo ni en internet. Si se necesita registro de ejecución, debe hacerse en el formato oficial de la planta.</p></details>
 <details><summary>Cambié algo en el editor pero el mapa que tienen en planta no cambió.</summary>
 <p>Los HTML exportados son copias fijas. Exporta de nuevo y reemplaza el archivo publicado.</p></details>
 <details><summary>Abrí el editor y no aparecen mis cambios.</summary>

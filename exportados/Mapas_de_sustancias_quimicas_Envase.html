@@ -170,6 +170,34 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
 .mv-nofile svg{width:44px;height:44px;opacity:.6}
 .mv-nofile b{display:block;color:var(--ink);font-size:16px;margin:6px 0 2px}
 .mv-src{padding:12px 16px 0;color:var(--muted);font-size:12px}
+/* --- mapas de procesos --- */
+.mv-cnt{flex:none;background:var(--accent-2);color:#2b2000;border-radius:999px;font-size:11px;font-weight:800;padding:0 6px;margin-left:2px}
+.mv-compact .mv-cnt{display:none}
+.mv-pic{flex:none;width:34px;height:34px;border-radius:10px;background:#e8f1fc;color:#1565c0;display:grid;place-items:center}
+.mv-pic svg{width:20px;height:20px}
+.mv-pic.mv-sm{width:26px;height:26px;border-radius:8px}
+.mv-pic.mv-sm svg{width:16px;height:16px}
+.mv-meta{display:flex;flex-wrap:wrap;gap:6px;padding:12px 16px 0}
+.mv-meta span{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:13px}
+.mv-meta b{font-weight:700}
+.mv-meta svg{width:16px;height:16px;flex:none;color:var(--muted)}
+.mv-pdesc{padding:12px 16px 0;margin:0;color:var(--ink);font-size:15px;white-space:pre-line}
+.mv-progress{display:flex;align-items:center;gap:10px;padding:14px 16px 0;font-size:13px;color:var(--muted);font-weight:600}
+.mv-progress div{flex:1;height:8px;border-radius:999px;background:var(--bg);overflow:hidden;border:1px solid var(--line)}
+.mv-progress i{display:block;height:100%;background:var(--ok);transition:width .25s}
+.mv-progress button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 9px;font-size:12px}
+.mv-steps{list-style:none;margin:0;padding:10px 16px 0;display:grid;gap:8px}
+.mv-step{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff}
+.mv-step.mv-warn{border-color:#f0b35a;background:#fff8ec}
+.mv-step label{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+.mv-num{width:30px;height:30px;border-radius:50%;background:var(--head);color:#fff;font-weight:800;display:grid;place-items:center;font-size:14px}
+.mv-step.mv-done .mv-num{background:var(--ok)}
+.mv-step input{width:18px;height:18px;margin:0;accent-color:var(--ok)}
+.mv-step-t{font-size:15px;line-height:1.45;white-space:pre-line;padding-top:4px}
+.mv-step.mv-done .mv-step-t{color:var(--muted);text-decoration:line-through}
+.mv-step-n{display:block;margin-top:4px;font-size:13px;color:#8a4b00;font-weight:600}
+.mv-step-img{display:block;margin-top:8px;border:1px solid var(--line);border-radius:8px;padding:0;background:#000;overflow:hidden;max-width:320px;cursor:zoom-in}
+.mv-step-img img{display:block;width:100%}
 /* --- visor de imagen ampliada --- */
 .mv-lightbox{position:fixed;inset:0;z-index:60;background:#0b0f14}
 .mv-lightbox .mv-viewport{background:#0b0f14;cursor:grab}
@@ -178,6 +206,7 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
 .mv-lightbox .mv-zoom button{background:rgba(255,255,255,.95)}
 .mv-foot{flex:none;font-size:11.5px;color:var(--muted);padding:8px 14px;border-top:1px solid var(--line)}
 @media (max-width:860px){
+  .mv-step-img{max-width:100%}
   .mv-side{position:fixed;left:0;right:0;bottom:0;width:auto;height:min(72vh,560px);border-left:0;border-radius:18px 18px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.25);z-index:45;padding-bottom:env(safe-area-inset-bottom)}
   .mv-sheet-close{display:grid}
   .mv-tabs{align-items:center}
@@ -213,6 +242,10 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
     target: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>',
     zoom: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21M10.5 7.5v6M7.5 10.5h6"/></svg>',
     phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2z"/></svg>',
+    steps: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v2h6V3M8.5 10l1.5 1.5 3-3M8.5 16l1.5 1.5 3-3"/></svg>',
+    user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
+    clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+    shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/></svg>',
     doc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6 2h8l5 5v15H6z"/><path d="M14 2v5h5M9 13h7M9 17h7"/></svg>'
   };
 
@@ -251,6 +284,19 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
     return h('span', { class: 'mv-sig' + (/ATEN/.test(sig) ? ' mv-atn' : '') }, sig);
   }
   function norm(s) { return (s || '').toString().normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
+
+  function isProc(m) { return m && m.type === 'procesos'; }
+  function procById(m, id) {
+    var found = null;
+    (m.areas || []).forEach(function (a) { (a.processes || []).forEach(function (p) { if (p.id === id) found = { p: p, a: a }; }); });
+    return found;
+  }
+  function allProcs(m) {
+    var out = [];
+    (m.areas || []).forEach(function (a) { (a.processes || []).forEach(function (p) { out.push({ p: p, a: a }); }); });
+    return out;
+  }
+  function stepsLabel(n) { return n + (n === 1 ? ' paso' : ' pasos'); }
 
   var CHEMS = {};
   (DATA.chemicals || []).forEach(function (c) { CHEMS[c.id] = c; });
@@ -367,7 +413,8 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
   }
 
   // ------------------------------------------------------------------- estado
-  var state = { map: MAPS[0].id, area: null, ficha: null, hl: null, side: null, tab: 'chems', q: '' };
+  var state = { map: MAPS[0].id, area: null, ficha: null, proc: null, hl: null, side: null, tab: 'chems', q: '' };
+  var checks = {};     // pasos marcados (solo en memoria, se pierden al cerrar)
   var views = {};      // vistas de mapa ya construidas
   var hashStack = [];
   var isNarrow = function () { return window.matchMedia('(max-width:860px)').matches; };
@@ -380,6 +427,7 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
     var p = '#/' + encodeURIComponent(st.map);
     if (st.area) p += '/a/' + encodeURIComponent(st.area);
     if (st.ficha) p += '/f/' + encodeURIComponent(st.ficha);
+    if (st.proc) p += '/p/' + encodeURIComponent(st.proc);
     return p;
   }
   /* Navegacion: se guarda en el '#' de la direccion para que funcione el
@@ -403,16 +451,17 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
   }
   function parseHash() {
     var parts = currentHash().replace(/^#\/?/, '').split('/').map(decodeURIComponent);
-    var st = { map: MAPS[0].id, area: null, ficha: null };
+    var st = { map: MAPS[0].id, area: null, ficha: null, proc: null };
     if (parts[0] && mapById(parts[0])) st.map = parts[0];
     for (var i = 1; i < parts.length - 1; i += 2) {
       if (parts[i] === 'a' && areaById(mapById(st.map), parts[i + 1])) st.area = parts[i + 1];
       if (parts[i] === 'f' && CHEMS[parts[i + 1]]) st.ficha = parts[i + 1];
+      if (parts[i] === 'p' && procById(mapById(st.map), parts[i + 1])) st.proc = parts[i + 1];
     }
     return st;
   }
   function go(partial) {
-    var st = { map: state.map, area: state.area, ficha: state.ficha };
+    var st = { map: state.map, area: state.area, ficha: state.ficha, proc: state.proc };
     for (var k in partial) st[k] = partial[k];
     var target = hashFor(st);
     if (sameHash(target, currentHash())) return;
@@ -425,8 +474,8 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
     else if (!sameHash(hashStack[hashStack.length - 1], cur)) hashStack.push(cur);
     var st = parseHash();
     var mapChanged = st.map !== state.map;
-    state.map = st.map; state.area = st.area; state.ficha = st.ficha;
-    if (mapChanged) state.hl = null;
+    state.map = st.map; state.area = st.area; state.ficha = st.ficha; state.proc = st.proc;
+    if (mapChanged) { state.hl = null; state.q = ''; }
     render();
   }
 
@@ -441,13 +490,13 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
   var subEl = h('div', { class: 'mv-sub' });
   var mapsSwitch = MAPS.length > 1 ? h('div', { class: 'mv-maps', role: 'group', 'aria-label': 'Mapas' },
     MAPS.map(function (m) {
-      return h('button', { type: 'button', 'data-map': m.id, onclick: function () { go({ map: m.id, area: null, ficha: null }); } }, m.name || m.id);
+      return h('button', { type: 'button', 'data-map': m.id, onclick: function () { go({ map: m.id, area: null, ficha: null, proc: null }); } }, m.name || m.id);
     })) : null;
-  var legendBtn = h('button', { type: 'button', class: 'mv-hbtn', 'aria-pressed': 'false', title: 'Sustancias y áreas', onclick: function () { toggleSide(); } },
+  var legendBtn = h('button', { type: 'button', class: 'mv-hbtn', 'aria-pressed': 'false', title: 'Leyenda', onclick: function () { toggleSide(); } },
     icon('list'), h('span', null, 'Leyenda'));
   var head = h('header', { class: 'mv-head' },
     h('div', { class: 'mv-brand' },
-      h('div', { class: 'mv-logo', html: ICONS.hazard }),
+      h('div', { class: 'mv-logo', id: 'mv-logo', html: ICONS.hazard }),
       h('div', { class: 'mv-titles' }, titleEl, subEl)),
     mapsSwitch, legendBtn);
   var mapwrap = h('div', { class: 'mv-mapwrap' });
@@ -470,8 +519,9 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
         type: 'button', class: 'mv-area', 'data-area': a.id, 'aria-label': 'Abrir área: ' + a.name,
         title: a.name,
         style: { left: a.x + '%', top: a.y + '%', width: a.w + '%', height: a.h + '%', '--aw': (a.w / 100 * W).toFixed(1) + 'px' },
-        onclick: function () { go({ area: a.id, ficha: null }); }
-      }, h('span', { class: 'mv-area-tag' }, h('i', { html: ICONS.enter }), h('span', null, a.name)));
+        onclick: function () { go({ area: a.id, ficha: null, proc: null }); }
+      }, h('span', { class: 'mv-area-tag' }, h('i', { html: ICONS.enter }), h('span', null, a.name),
+        isProc(m) && (a.processes || []).length ? h('em', { class: 'mv-cnt', title: a.processes.length + ' procesos' }, String(a.processes.length)) : null));
       content.appendChild(btn);
     });
     (m.markers || []).forEach(function (mk) {
@@ -495,7 +545,9 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
       content.classList.toggle('mv-compact', W * s < 640);
     }, 34);
     var hlBar = h('div', { class: 'mv-hl-bar', hidden: true });
-    var hint = h('div', { class: 'mv-hint' }, h('div', null, 'Toca un área para ver sus fotos y químicos · toca un pictograma para ver su ficha. Arrastra o pellizca para mover y ampliar.'));
+    var hint = h('div', { class: 'mv-hint' }, h('div', null, isProc(m)
+      ? 'Toca un área para ver sus fotos y los procesos que se deben seguir. Arrastra o pellizca para mover y ampliar.'
+      : 'Toca un área para ver sus fotos y químicos · toca un pictograma para ver su ficha. Arrastra o pellizca para mover y ampliar.'));
     setTimeout(function () { hint.style.transition = 'opacity .6s'; hint.style.opacity = '0'; }, 9000);
     wrap.append(viewport, zoomButtons(pz), hint, hlBar);
     return { el: wrap, pz: pz, content: content, hlBar: hlBar, m: m, W: W, H: H, fitted: false };
@@ -560,16 +612,23 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
     var m = curMap();
     side.innerHTML = '';
     var tabs = h('div', { class: 'mv-tabs', role: 'tablist' },
-      h('button', { type: 'button', role: 'tab', 'aria-selected': String(state.tab === 'chems'), onclick: function () { state.tab = 'chems'; renderSide(); } }, 'Sustancias'),
+      h('button', { type: 'button', role: 'tab', 'aria-selected': String(state.tab === 'chems'), onclick: function () { state.tab = 'chems'; renderSide(); } }, isProc(m) ? 'Procesos' : 'Sustancias'),
       h('button', { type: 'button', role: 'tab', 'aria-selected': String(state.tab === 'areas'), onclick: function () { state.tab = 'areas'; renderSide(); } }, 'Áreas'),
       h('button', { type: 'button', class: 'mv-x mv-sheet-close', 'aria-label': 'Cerrar', style: { 'margin-left': '6px', flex: 'none' }, onclick: function () { toggleSide(false); } }, icon('close')));
-    var input = h('input', { type: 'search', placeholder: state.tab === 'chems' ? 'Buscar sustancia…' : 'Buscar área…', value: state.q, 'aria-label': 'Buscar' });
+    var input = h('input', { type: 'search', placeholder: state.tab === 'chems' ? (isProc(m) ? 'Buscar proceso…' : 'Buscar sustancia…') : 'Buscar área…', value: state.q, 'aria-label': 'Buscar' });
     var list = h('div', { class: 'mv-list' });
     input.addEventListener('input', function () { state.q = input.value; fill(); });
     function fill() {
       list.innerHTML = '';
       var q = norm(state.q);
-      if (state.tab === 'chems') {
+      if (state.tab === 'chems' && isProc(m)) {
+        allProcs(m).filter(function (x) { return !q || norm(x.p.name + ' ' + x.a.name).indexOf(q) >= 0; }).forEach(function (x) {
+          list.append(h('button', { type: 'button', class: 'mv-row', onclick: function () { if (isNarrow()) toggleSide(false); go({ area: x.a.id, proc: x.p.id, ficha: null }); } },
+            h('span', { class: 'mv-pic mv-sm', html: ICONS.steps }),
+            h('span', { class: 'mv-grow' }, h('b', null, x.p.name || 'Proceso'),
+              h('small', null, x.a.name + ' · ' + stepsLabel((x.p.steps || []).length)))));
+        });
+      } else if (state.tab === 'chems') {
         usedChems(m).filter(function (x) { return !q || norm(x.c.name).indexOf(q) >= 0; }).forEach(function (x) {
           var c = x.c, nf = (c.fichas || []).length;
           list.append(h('div', { class: 'mv-row', style: { padding: '4px 4px 4px 8px' } },
@@ -592,17 +651,17 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
       } else {
         (m.areas || []).filter(function (a) { return !q || norm(a.name).indexOf(q) >= 0; }).forEach(function (a) {
           var ph = (a.photos || [])[0];
-          list.append(h('button', { type: 'button', class: 'mv-row', onclick: function () { if (isNarrow()) toggleSide(false); go({ area: a.id, ficha: null }); } },
+          list.append(h('button', { type: 'button', class: 'mv-row', onclick: function () { if (isNarrow()) toggleSide(false); go({ area: a.id, ficha: null, proc: null }); } },
             h('span', { class: 'mv-athumb', style: ph ? { 'background-image': 'url("' + asset(ph.img) + '")' } : null }, ph ? null : icon('camera')),
             h('span', { class: 'mv-grow' }, h('b', null, a.name),
-              h('small', null, areaChems(m, a).length + ' sustancias', ph ? null : h('span', { class: 'mv-pend' }, 'Foto pendiente')))));
+              h('small', null, isProc(m) ? (a.processes || []).length + ' procesos' : areaChems(m, a).length + ' sustancias', ph ? null : h('span', { class: 'mv-pend' }, 'Foto pendiente')))));
         });
       }
       if (!list.children.length) list.append(h('p', { style: { color: 'var(--muted)', padding: '12px' } }, 'Sin resultados.'));
     }
     fill();
     side.append(tabs, h('div', { class: 'mv-search' }, input), list,
-      h('div', { class: 'mv-foot' }, 'Toca una sustancia para ver su ficha SGA. ', OPTIONS.footer || ''));
+      h('div', { class: 'mv-foot' }, isProc(m) ? 'Toca un proceso para ver sus pasos. ' : 'Toca una sustancia para ver su ficha SGA. ', OPTIONS.footer || ''));
   }
 
   // ------------------------------------------------------------ vista de área
@@ -652,7 +711,7 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
     drawPhoto();
 
     var chemsBox = h('div', { class: 'mv-chems' });
-    var ids = areaChems(m, a);
+    var ids = isProc(m) ? [] : areaChems(m, a);
     ids.forEach(function (id) {
       var c = CHEMS[id], nf = (c.fichas || []).length;
       chemsBox.append(h('button', { type: 'button', class: 'mv-chem', onclick: function () { go({ ficha: id }); } },
@@ -662,19 +721,31 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
         h('span', { class: 'mv-go' }, icon('next'))));
     });
     if (!ids.length) chemsBox.append(h('p', { style: { color: 'var(--muted)', margin: '4px' } }, 'No hay sustancias registradas en esta área.'));
+    if (isProc(m)) {
+      chemsBox = h('div', { class: 'mv-chems' });
+      (a.processes || []).forEach(function (p, i) {
+        var n = (p.steps || []).length;
+        var meta = [stepsLabel(n), p.owner, p.freq].filter(Boolean).join(' · ');
+        chemsBox.append(h('button', { type: 'button', class: 'mv-chem', onclick: function () { go({ proc: p.id, ficha: null }); } },
+          h('span', { class: 'mv-num', style: { background: 'var(--blue,#1565c0)' } }, String(i + 1)),
+          h('span', { class: 'mv-grow' }, h('b', null, p.name || 'Proceso'), h('small', null, meta)),
+          h('span', { class: 'mv-go' }, icon('next'))));
+      });
+      if (!(a.processes || []).length) chemsBox.append(h('p', { style: { color: 'var(--muted)', margin: '4px' } }, 'No hay procesos registrados en esta área.'));
+    }
 
-    var mini = h('div', { class: 'mv-minimap', title: 'Ver en el mapa', onclick: function () { go({ area: null, ficha: null }); setTimeout(function () { var v = views[m.id]; v.pz.focus(a.x / 100 * v.W, a.y / 100 * v.H, a.w / 100 * v.W, a.h / 100 * v.H, true); }, 30); } },
+    var mini = h('div', { class: 'mv-minimap', title: 'Ver en el mapa', onclick: function () { go({ area: null, ficha: null, proc: null }); setTimeout(function () { var v = views[m.id]; v.pz.focus(a.x / 100 * v.W, a.y / 100 * v.H, a.w / 100 * v.W, a.h / 100 * v.H, true); }, 30); } },
       h('img', { src: asset(m.background), alt: '' }),
       h('div', { style: { left: a.x + '%', top: a.y + '%', width: a.w + '%', height: a.h + '%' } }));
 
     areaView = h('section', { class: 'mv-area-view', 'data-key': m.id + '/' + a.id, 'aria-label': a.name },
       h('div', { class: 'mv-av-head' },
-        h('button', { type: 'button', class: 'mv-back', onclick: function () { go({ area: null, ficha: null }); } }, icon('back'), h('span', null, 'Mapa')),
+        h('button', { type: 'button', class: 'mv-back', onclick: function () { go({ area: null, ficha: null, proc: null }); } }, icon('back'), h('span', null, 'Mapa')),
         h('div', { class: 'mv-crumb' }, h('small', null, (m.name || '') + ' · Área'), h('h2', null, a.name))),
       h('div', { class: 'mv-av-body' },
         h('div', { class: 'mv-card' }, stage, thumbs, a.desc ? h('div', { class: 'mv-desc' }, a.desc) : null),
         h('div', null,
-          h('div', { class: 'mv-card' }, h('h3', null, 'Sustancias en esta área'), chemsBox),
+          h('div', { class: 'mv-card' }, h('h3', null, isProc(m) ? 'Procesos en esta área' : 'Sustancias en esta área'), chemsBox),
           h('div', { class: 'mv-card', style: { 'margin-top': '16px' } }, h('h3', null, 'Ubicación en el mapa'), mini))));
     mapwrap.appendChild(areaView);
   }
@@ -745,6 +816,59 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
     if (modal) { modal.remove(); modal = null; if (lastFocus && lastFocus.focus) try { lastFocus.focus({ preventScroll: true }); } catch (e) { } }
   }
 
+  // ----------------------------------------------------------------- proceso
+  function renderProc(m, found) {
+    var p = found.p, a = found.a;
+    if (modal && modal.getAttribute('data-proc') === p.id) return;
+    closeFicha();
+    lastFocus = document.activeElement;
+    var steps = p.steps || [];
+    var done = checks[p.id] || (checks[p.id] = {});
+    var body = h('div', { class: 'mv-db' });
+    function draw() {
+      body.innerHTML = '';
+      var meta = [];
+      if (p.owner) meta.push(h('span', null, icon('user'), h('b', null, 'Responsable:'), ' ' + p.owner));
+      if (p.freq) meta.push(h('span', null, icon('clock'), h('b', null, 'Frecuencia:'), ' ' + p.freq));
+      if (p.ppe) meta.push(h('span', null, icon('shield'), h('b', null, 'EPP:'), ' ' + p.ppe));
+      if (meta.length) body.append(h('div', { class: 'mv-meta' }, meta));
+      if (p.desc) body.append(h('p', { class: 'mv-pdesc' }, p.desc));
+      if (!steps.length) {
+        body.append(h('div', { class: 'mv-nofile' }, icon('steps'), h('b', null, 'Pasos pendientes'), h('span', null, 'Los pasos de este proceso se agregarán posteriormente.')));
+      } else {
+        var nDone = steps.filter(function (s, i) { return done[i]; }).length;
+        body.append(h('div', { class: 'mv-progress' }, h('span', null, nDone + ' de ' + steps.length + ' pasos'),
+          h('div', null, h('i', { style: { width: (nDone / steps.length * 100) + '%' } })),
+          nDone ? h('button', { type: 'button', onclick: function () { checks[p.id] = done = {}; draw(); } }, 'Reiniciar') : null));
+        body.append(h('ol', { class: 'mv-steps' }, steps.map(function (s, i) {
+          var cb = h('input', { type: 'checkbox', 'aria-label': 'Paso ' + (i + 1) + ' realizado' });
+          cb.checked = !!done[i];
+          cb.addEventListener('change', function () { done[i] = cb.checked; draw(); });
+          return h('li', { class: 'mv-step' + (s.warn ? ' mv-warn' : '') + (done[i] ? ' mv-done' : '') },
+            h('label', null, h('span', { class: 'mv-num' }, String(i + 1)), cb),
+            h('div', null, h('div', { class: 'mv-step-t' }, s.text || ''),
+              s.note ? h('span', { class: 'mv-step-n' }, (s.warn ? '⚠ ' : '') + s.note) : null,
+              s.img ? h('button', { type: 'button', class: 'mv-step-img', 'aria-label': 'Ampliar imagen del paso ' + (i + 1), onclick: function () { openLightbox(asset(s.img), (p.name || '') + ' · paso ' + (i + 1)); } },
+                h('img', { src: asset(s.img), alt: 'Paso ' + (i + 1) })) : null));
+        })));
+      }
+      body.append(h('div', { class: 'mv-sec' }, h('h4', null, 'Ubicación'),
+        h('div', { class: 'mv-places' }, h('button', { type: 'button', onclick: function () { go({ area: a.id, proc: null }); } }, icon('pin'), a.name))));
+      if (p.source) body.append(h('div', { class: 'mv-src' }, 'Referencia: ' + p.source));
+    }
+    draw();
+    var close = h('button', { type: 'button', class: 'mv-x', 'aria-label': 'Cerrar proceso', onclick: function () { go({ proc: null }); } }, icon('close'));
+    modal = h('div', { class: 'mv-modal', 'data-proc': p.id, role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Proceso: ' + (p.name || '') },
+      h('div', { class: 'mv-backdrop', style: { position: 'absolute' }, onclick: function () { go({ proc: null }); } }),
+      h('div', { class: 'mv-dialog' },
+        h('div', { class: 'mv-dh' }, h('span', { class: 'mv-pic', html: ICONS.steps }),
+          h('div', { class: 'mv-grow' }, h('h2', null, p.name || 'Proceso'), h('small', null, a.name + ' · ' + stepsLabel(steps.length))),
+          close),
+        body));
+    root.appendChild(modal);
+    close.focus({ preventScroll: true });
+  }
+
   // -------------------------------------------------------- imagen ampliada
   var lightbox = null;
   function openLightbox(src, caption) {
@@ -769,7 +893,8 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
   // ------------------------------------------------------------------ render
   function render() {
     var m = curMap();
-    titleEl.textContent = m.title || 'Mapa de sustancias químicas';
+    titleEl.textContent = m.title || (isProc(m) ? 'Mapa de procesos' : 'Mapa de sustancias químicas');
+    document.getElementById('mv-logo').innerHTML = isProc(m) ? ICONS.steps : ICONS.hazard;
     subEl.textContent = m.subtitle || m.name || '';
     document.title = (m.title || 'Mapa') + (m.subtitle ? ' · ' + m.subtitle : (m.name ? ' · ' + m.name : ''));
     if (mapsSwitch) Array.prototype.forEach.call(mapsSwitch.children, function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-map') === m.id)); });
@@ -777,16 +902,18 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
     var a = state.area ? areaById(m, state.area) : null;
     if (a) renderArea(m, a); else closeArea();
     var c = state.ficha ? CHEMS[state.ficha] : null;
-    if (c) renderFicha(m, c); else closeFicha();
+    var pr = state.proc ? procById(m, state.proc) : null;
+    if (pr) renderProc(m, pr); else if (c) renderFicha(m, c); else closeFicha();
     renderSide();
   }
 
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
     if (closeLightbox()) return;
-    if (state.ficha) go({ ficha: null });
+    if (state.proc) go({ proc: null });
+    else if (state.ficha) go({ ficha: null });
     else if (!side.hidden && isNarrow()) toggleSide(false);
-    else if (state.area) go({ area: null });
+    else if (state.area) go({ area: null, proc: null });
   });
   window.addEventListener('hashchange', function () { if (!memMode) onHash(); });
 
@@ -794,7 +921,7 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
   if (!isNarrow() && OPTIONS.legendOpen !== false) toggleSide(true);
   if (!location.hash || location.hash.length < 3) navigate(hashFor(state), true);
   else onHash();
-})(MAPA_DATA, document.getElementById("mapa-app"), {"footer":"Actualizado: 28 oct 2026","legendOpen":true});
+})(MAPA_DATA, document.getElementById("mapa-app"), {"footer":"Actualizado: 12 nov 2026","legendOpen":true});
 </script>
 </body>
 </html>
