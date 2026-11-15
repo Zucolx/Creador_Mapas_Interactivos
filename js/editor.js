@@ -189,9 +189,10 @@
   /* Cambio estructural: guarda historial, aplica y vuelve a dibujar todo. */
   function commit(fn) { pushUndo(); fn(); changed(); }
   function changed(light) {
+    normalizeProject(project);
     validateUi();
     scheduleSave();
-    if (light) { renderHead(); renderLeft(); renderCanvas(); } else renderAll();
+    if (light) { safe(renderHead, 'la cabecera'); safe(renderLeft, 'el panel izquierdo'); safe(renderCanvas, 'el plano'); } else renderAll();
   }
   function restore(str) {
     var o = JSON.parse(str);
@@ -237,7 +238,15 @@
     app.append(head, h('div', { class: 'narrow-warning' }, 'El editor está pensado para PC o tablet. Los mapas exportados sí se ven perfectamente en el teléfono.'),
       h('div', { class: 'ed-body' }, left, center, right));
   }
-  function renderAll() { renderHead(); renderLeft(); renderCenter(); renderRight(); }
+  /* Si un panel falla al dibujarse, los demas se dibujan igual y se avisa. */
+  var renderErrorShown = false;
+  function safe(fn, name) {
+    try { fn(); } catch (e) {
+      console.error('Error al dibujar ' + name, e);
+      if (!renderErrorShown) { renderErrorShown = true; toast('Error al actualizar ' + name + '. Recarga la página; tus datos están guardados.', true); setTimeout(function () { renderErrorShown = false; }, 6000); }
+    }
+  }
+  function renderAll() { safe(renderHead, 'la cabecera'); safe(renderLeft, 'el panel izquierdo'); safe(renderCenter, 'el plano'); safe(renderRight, 'el panel derecho'); }
 
   // ----------------------------------------------------------------- cabecera
   function renderHead() {
@@ -722,7 +731,7 @@
         if (d.rect && d.rect.w > 0.6 && d.rect.h > 0.6) {
           commit(function () {
             var a = { id: uid('area'), name: 'Nueva área ' + (m.areas.length + 1), desc: '', x: r3(d.rect.x), y: r3(d.rect.y),
-              w: r3(Math.min(d.rect.w, 100 - d.rect.x)), h: r3(Math.min(d.rect.h, 100 - d.rect.y)), photos: [], chems: [] };
+              w: r3(Math.min(d.rect.w, 100 - d.rect.x)), h: r3(Math.min(d.rect.h, 100 - d.rect.y)), photos: [], chems: [], processes: [] };
             m.areas.push(a);
             m.markers.forEach(function (mk) { if (!mk.area && mk.x >= a.x && mk.x <= a.x + a.w && mk.y >= a.y && mk.y <= a.y + a.h) assignMarkerArea(m, mk); });
             ui.sel = { type: 'area', id: a.id }; ui.tool = 'select';
