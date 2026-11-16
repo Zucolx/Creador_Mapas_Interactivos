@@ -43,6 +43,7 @@ function MapaViewerRuntime(DATA, ROOT, OPTIONS) {
 .mv-area-tag{position:absolute;left:calc(var(--inv,1)*-2px);top:calc(var(--inv,1)*-2px);transform:translateY(-100%) scale(var(--inv,1));transform-origin:0 100%;display:flex;align-items:center;gap:5px;background:var(--head);color:#fff;font-size:12.5px;font-weight:600;padding:3px 9px 3px 4px;border-radius:999px;white-space:nowrap;max-width:240px;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer}
 .mv-area-tag span{overflow:hidden;text-overflow:ellipsis}
 .mv-area-tag{max-width:max(150px,min(260px,calc(var(--aw) / var(--inv,1))))}
+.mv-procmap .mv-area-tag{max-width:max(190px,min(300px,calc(var(--aw) / var(--inv,1))))}
 .mv-area-tag i{flex:none;width:19px;height:19px;border-radius:50%;background:var(--accent-2);color:#2b2000;display:grid;place-items:center}
 .mv-area-tag i svg{width:12px;height:12px}
 .mv-compact .mv-area-tag span{display:none}
@@ -169,6 +170,41 @@ function MapaViewerRuntime(DATA, ROOT, OPTIONS) {
 .mv-procmap .mv-area-tag{background:#1565c0}
 .mv-procmap .mv-area-tag i{background:#fff;color:#1565c0}
 .mv-procmap .mv-area:hover .mv-area-tag{background:var(--head)}
+/* --- color propio del área y avance --- */
+.mv-area.mv-colored{border-color:var(--ac)!important;background:var(--acf)}
+.mv-area.mv-colored:hover,.mv-area.mv-colored:focus-visible{background:var(--ach)}
+.mv-area.mv-colored .mv-area-tag{background:var(--ac);color:var(--act)}
+.mv-area.mv-colored .mv-area-tag i{background:var(--act);color:var(--ac)}
+.mv-area.mv-colored .mv-cells .cf{fill:var(--acf)}
+.mv-area.mv-colored .mv-cells .ce{stroke:var(--ac)}
+.mv-area.mv-colored.mv-sh-cells:hover .cf{fill:var(--ach)}
+.mv-pct{flex:none;font-style:normal;background:rgba(255,255,255,.92);color:#1c2330;border-radius:999px;font-size:11px;font-weight:800;padding:0 7px;margin-left:2px}
+.mv-pct.mv-ok{background:#2e7d32;color:#fff}
+.mv-compact .mv-pct{display:none}
+.mv-check{display:none;position:absolute;left:50%;top:50%;width:34px;height:34px;border-radius:50%;background:#2e7d32;color:#fff;place-items:center;font-size:20px;font-weight:900;transform:translate(-50%,-50%) scale(var(--inv,1));box-shadow:0 0 0 3px #fff,0 2px 6px rgba(0,0,0,.35);pointer-events:none;z-index:2}
+.mv-area.mv-complete .mv-check{display:grid}
+.mv-prog{gap:8px}
+.mv-prog .mv-bar{width:70px;height:8px;border-radius:999px;background:rgba(255,255,255,.25);overflow:hidden}
+.mv-prog .mv-bar i{display:block;height:100%;background:#7bd389;transition:width .25s}
+.mv-prog[hidden]{display:none}
+.mv-avance{flex:none;margin:10px 12px 2px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#f7faf7}
+.mv-avance b{display:flex;justify-content:space-between;font-size:14px}
+.mv-avance .mv-bar2{height:10px;border-radius:999px;background:#e3e8e3;overflow:hidden;margin:6px 0}
+.mv-avance .mv-bar2 i{display:block;height:100%;background:var(--ok);transition:width .25s}
+.mv-avance small{color:var(--muted);font-size:12px}
+.mv-avance button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:2px 8px;font-size:12px;float:right}
+.mv-dot{flex:none;width:12px;height:12px;border-radius:50%;background:var(--ac,#1565c0);box-shadow:0 0 0 1px rgba(0,0,0,.2)}
+.mv-aprog{padding:2px 14px 10px}
+.mv-aprog .mv-bar2{height:8px;border-radius:999px;background:var(--bg);overflow:hidden;border:1px solid var(--line);margin:4px 0}
+.mv-aprog .mv-bar2 i{display:block;height:100%;background:var(--ok)}
+.mv-aprog small{color:var(--muted);font-size:12.5px}
+.mv-aprog .mv-mark{margin-top:6px;border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 12px;font-weight:600;display:inline-flex;gap:8px;align-items:center}
+.mv-pstate{flex:none;font-size:12px;font-weight:800;color:var(--muted);min-width:42px;text-align:right}
+.mv-pstate.mv-ok{color:#fff;background:#2e7d32;border-radius:999px;min-width:0;width:26px;height:26px;display:grid;place-items:center;font-size:15px}
+.mv-worth{display:inline-block;background:#e8f5e9;color:#1b5e20;border-radius:6px;padding:1px 7px;font-size:12px;font-weight:700}
+.mv-markall{border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 9px;font-size:12px}
+.mv-mark-proc{display:flex;align-items:center;gap:10px;margin:10px 16px 0;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;font-weight:600;cursor:pointer}
+.mv-mark-proc input{width:20px;height:20px;accent-color:var(--ok)}
 /* --- formas de área --- */
 .mv-sh-ellipse{border-radius:50%!important}
 .mv-area.mv-sh-cells{border:0!important;background:none!important;pointer-events:none}
@@ -325,6 +361,63 @@ function MapaViewerRuntime(DATA, ROOT, OPTIONS) {
     return h('span', { html: '<svg class="' + (cls || 'mv-cells') + '" viewBox="0 0 ' + w + ' ' + hgt + '" preserveAspectRatio="none"><path class="cf" d="' + fill + '"/><path class="ce" d="' + edge + '"/></svg>', style: { display: 'contents' } });
   }
   function shapeClass(a) { return a.shape === 'ellipse' ? ' mv-sh-ellipse' : (a.shape === 'cells' && a.grid && a.grid.cells.length ? ' mv-sh-cells' : ''); }
+  function hexRgba(hex, al) {
+    var x = (hex || '').replace('#', ''); if (x.length === 3) x = x.replace(/./g, '$&$&');
+    var n = parseInt(x, 16); if (isNaN(n)) return '';
+    return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + al + ')';
+  }
+  function textOn(hex) {
+    var x = (hex || '').replace('#', ''); if (x.length === 3) x = x.replace(/./g, '$&$&');
+    var n = parseInt(x, 16); if (isNaN(n)) return '#fff';
+    var l = (0.299 * (n >> 16 & 255) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255;
+    return l > 0.62 ? '#1c2330' : '#fff';
+  }
+  function colorVars(a) {
+    if (!a.color) return {};
+    return { '--ac': a.color, '--acf': hexRgba(a.color, 0.16), '--ach': hexRgba(a.color, 0.3), '--act': textOn(a.color) };
+  }
+
+  /* Avance (mapas de procesos). Cada área vale lo mismo en el mapa y cada
+     proceso lo mismo dentro de su área, salvo pesos fijados en el editor:
+     los que quedan en automático se reparten lo que falta hasta 100 %.
+     Las marcas viven solo en memoria: no se guardan al cerrar el archivo. */
+  var doneProc = {}, doneArea = {};
+  function shares(items) {
+    var fixed = 0, auto = 0;
+    items.forEach(function (it) { var w = +it.weight; if (w > 0) fixed += w; else auto++; });
+    var rest = Math.max(0, 100 - fixed);
+    var ws = items.map(function (it) { var w = +it.weight; return w > 0 ? w : (auto ? rest / auto : 0); });
+    var tot = ws.reduce(function (t, w) { return t + w; }, 0) || 1;
+    return ws.map(function (w) { return w / tot; });
+  }
+  function procFrac(p) {
+    var st = p.steps || [];
+    if (!st.length) return doneProc[p.id] ? 1 : 0;
+    var d = checks[p.id] || {};
+    return st.filter(function (x, i) { return d[i]; }).length / st.length;
+  }
+  function areaFrac(a) {
+    var ps = a.processes || [];
+    if (!ps.length) return doneArea[a.id] ? 1 : 0;
+    var w = shares(ps);
+    return ps.reduce(function (t, p, i) { return t + w[i] * procFrac(p); }, 0);
+  }
+  function areaShare(m, a) { var as = m.areas || []; return shares(as)[as.indexOf(a)] || 0; }
+  function procShare(a, p) { var ps = a.processes || []; return shares(ps)[ps.indexOf(p)] || 0; }
+  function mapFrac(m) { var as = m.areas || [], w = shares(as); return as.reduce(function (t, a, i) { return t + w[i] * areaFrac(a); }, 0); }
+  function isDone(f) { return f >= 0.9995; }
+  function pct(x, noSign) {
+    var v = Math.round(x * 1000) / 10;
+    var t = Math.abs(v - Math.round(v)) < 0.05 ? String(Math.round(v)) : v.toFixed(1).replace('.', ',');
+    return noSign ? t : t + '%';
+  }
+  function areaBadge(m, a) {
+    var w = areaShare(m, a), f = areaFrac(a);
+    if (isDone(f)) return '✓ ' + pct(w);
+    return f > 0 ? pct(w * f, true) + ' / ' + pct(w) : pct(w);
+  }
+  function resetProgress() { checks = {}; doneProc = {}; doneArea = {}; }
+
   function stepsLabel(n) { return n + (n === 1 ? ' paso' : ' pasos'); }
 
   var CHEMS = {};
@@ -444,6 +537,7 @@ function MapaViewerRuntime(DATA, ROOT, OPTIONS) {
   // ------------------------------------------------------------------- estado
   var state = { map: MAPS[0].id, area: null, ficha: null, proc: null, hl: null, side: null, tab: 'chems', q: '' };
   var checks = {};     // pasos marcados (solo en memoria, se pierden al cerrar)
+  var progChip = null;
   var views = {};      // vistas de mapa ya construidas
   var hashStack = [];
   var isNarrow = function () { return window.matchMedia('(max-width:860px)').matches; };
@@ -527,7 +621,8 @@ function MapaViewerRuntime(DATA, ROOT, OPTIONS) {
     h('div', { class: 'mv-brand' },
       h('div', { class: 'mv-logo', id: 'mv-logo', html: ICONS.hazard }),
       h('div', { class: 'mv-titles' }, titleEl, subEl)),
-    mapsSwitch, legendBtn);
+    mapsSwitch, (progChip = h('button', { type: 'button', class: 'mv-hbtn mv-prog', hidden: true, title: 'Avance del mapa', onclick: function () { state.tab = 'areas'; toggleSide(true); } },
+      h('span', { class: 'mv-bar' }, h('i', { style: { width: '0%' } })), h('b', null, '0%'))), legendBtn);
   var mapwrap = h('div', { class: 'mv-mapwrap' });
   var side = h('aside', { class: 'mv-side', 'aria-label': 'Leyenda' });
   var main = h('div', { class: 'mv-main' }, mapwrap, side);
@@ -542,15 +637,19 @@ function MapaViewerRuntime(DATA, ROOT, OPTIONS) {
     var content = h('div', { class: 'mv-content' + (isProc(m) ? ' mv-procmap' : '') });
     content.appendChild(h('img', { class: 'mv-bg', src: asset(m.background), alt: m.title || m.name || '', draggable: 'false' }));
     var base = W * 0.0165 * (m.markerSize || 1);
+    var areaEls = {};
 
     (m.areas || []).forEach(function (a) {
+      var st = { left: a.x + '%', top: a.y + '%', width: a.w + '%', height: a.h + '%', '--aw': (a.w / 100 * W).toFixed(1) + 'px' };
+      var cv = colorVars(a); for (var k in cv) st[k] = cv[k];
+      var badge = isProc(m) ? h('em', { class: 'mv-pct', title: 'Avance del área / peso en el mapa' }, '') : null;
       var btn = h('button', {
-        type: 'button', class: 'mv-area' + shapeClass(a), 'data-area': a.id, 'aria-label': 'Abrir área: ' + a.name,
-        title: a.name,
-        style: { left: a.x + '%', top: a.y + '%', width: a.w + '%', height: a.h + '%', '--aw': (a.w / 100 * W).toFixed(1) + 'px' },
+        type: 'button', class: 'mv-area' + shapeClass(a) + (a.color ? ' mv-colored' : ''), 'data-area': a.id, 'aria-label': 'Abrir área: ' + a.name,
+        title: a.name, style: st,
         onclick: function () { go({ area: a.id, ficha: null, proc: null }); }
-      }, h('span', { class: 'mv-area-tag' }, h('i', { html: ICONS.enter }), h('span', null, a.name),
-        isProc(m) && (a.processes || []).length ? h('em', { class: 'mv-cnt', title: a.processes.length + ' procesos' }, String(a.processes.length)) : null));
+      }, h('span', { class: 'mv-area-tag' }, h('i', { html: ICONS.enter }), h('span', null, a.name), badge),
+        isProc(m) ? h('span', { class: 'mv-check', 'aria-hidden': 'true' }, '✓') : null);
+      areaEls[a.id] = { btn: btn, badge: badge };
       if (shapeClass(a) === ' mv-sh-cells') btn.prepend(cellsSvg(a));
       content.appendChild(btn);
     });
@@ -580,7 +679,7 @@ function MapaViewerRuntime(DATA, ROOT, OPTIONS) {
       : 'Toca un área para ver sus fotos y químicos · toca un pictograma para ver su ficha. Arrastra o pellizca para mover y ampliar.'));
     setTimeout(function () { hint.style.transition = 'opacity .6s'; hint.style.opacity = '0'; }, 9000);
     wrap.append(viewport, zoomButtons(pz), hint, hlBar);
-    return { el: wrap, pz: pz, content: content, hlBar: hlBar, m: m, W: W, H: H, fitted: false };
+    return { el: wrap, pz: pz, content: content, hlBar: hlBar, m: m, W: W, H: H, fitted: false, areaEls: areaEls };
   }
 
   function showMap(m) {
@@ -606,6 +705,25 @@ function MapaViewerRuntime(DATA, ROOT, OPTIONS) {
         h('button', { type: 'button', onclick: function () { go({ ficha: id }); } }, 'Ficha'),
         h('button', { type: 'button', onclick: function () { state.hl = null; applyHighlight(v); renderSide(); } }, 'Quitar'));
     }
+  }
+
+  function refreshProgress() {
+    var m = curMap();
+    progChip.hidden = !isProc(m);
+    if (!isProc(m)) return;
+    var f = mapFrac(m);
+    progChip.querySelector('i').style.width = (f * 100) + '%';
+    progChip.querySelector('b').textContent = pct(f);
+    progChip.setAttribute('aria-label', 'Avance del mapa: ' + pct(f));
+    var v = views[m.id];
+    if (v) (m.areas || []).forEach(function (a) {
+      var e = v.areaEls[a.id]; if (!e) return;
+      var done = isDone(areaFrac(a));
+      e.btn.classList.toggle('mv-complete', done);
+      if (e.badge) { e.badge.textContent = areaBadge(m, a); e.badge.classList.toggle('mv-ok', done); }
+    });
+    if (areaView && areaView._refresh) areaView._refresh();
+    if (!side.hidden) renderSide();
   }
 
   // --------------------------------------------------------------- leyenda
@@ -647,6 +765,15 @@ function MapaViewerRuntime(DATA, ROOT, OPTIONS) {
       h('button', { type: 'button', class: 'mv-x mv-sheet-close', 'aria-label': 'Cerrar', style: { 'margin-left': '6px', flex: 'none' }, onclick: function () { toggleSide(false); } }, icon('close')));
     var input = h('input', { type: 'search', placeholder: state.tab === 'chems' ? (isProc(m) ? 'Buscar proceso…' : 'Buscar sustancia…') : 'Buscar área…', value: state.q, 'aria-label': 'Buscar' });
     var list = h('div', { class: 'mv-list' });
+    var avance = null;
+    if (isProc(m)) {
+      var mf = mapFrac(m), nDoneA = (m.areas || []).filter(function (a) { return isDone(areaFrac(a)); }).length;
+      avance = h('div', { class: 'mv-avance' },
+        h('b', null, h('span', null, 'Avance del mapa'), h('span', null, pct(mf))),
+        h('div', { class: 'mv-bar2' }, h('i', { style: { width: (mf * 100) + '%' } })),
+        mf > 0 ? h('button', { type: 'button', onclick: function () { if (confirm('¿Borrar todas las marcas de avance?')) { resetProgress(); closeFicha(); render(); refreshProgress(); } } }, 'Reiniciar') : null,
+        h('small', null, nDoneA + ' de ' + (m.areas || []).length + ' áreas completadas · las marcas no se guardan al cerrar'));
+    }
     input.addEventListener('input', function () { state.q = input.value; fill(); });
     function fill() {
       list.innerHTML = '';
@@ -656,7 +783,8 @@ function MapaViewerRuntime(DATA, ROOT, OPTIONS) {
           list.append(h('button', { type: 'button', class: 'mv-row', onclick: function () { if (isNarrow()) toggleSide(false); go({ area: x.a.id, proc: x.p.id, ficha: null }); } },
             h('span', { class: 'mv-pic mv-sm', html: ICONS.steps }),
             h('span', { class: 'mv-grow' }, h('b', null, x.p.name || 'Proceso'),
-              h('small', null, x.a.name + ' · ' + stepsLabel((x.p.steps || []).length)))));
+              h('small', null, x.a.name + ' · ' + stepsLabel((x.p.steps || []).length))),
+            isDone(procFrac(x.p)) ? h('span', { class: 'mv-pstate mv-ok', title: 'Completado' }, '✓') : h('span', { class: 'mv-pstate' }, pct(procFrac(x.p)))));
         });
       } else if (state.tab === 'chems') {
         usedChems(m).filter(function (x) { return !q || norm(x.c.name).indexOf(q) >= 0; }).forEach(function (x) {
@@ -683,14 +811,16 @@ function MapaViewerRuntime(DATA, ROOT, OPTIONS) {
           var ph = (a.photos || [])[0];
           list.append(h('button', { type: 'button', class: 'mv-row', onclick: function () { if (isNarrow()) toggleSide(false); go({ area: a.id, ficha: null, proc: null }); } },
             h('span', { class: 'mv-athumb', style: ph ? { 'background-image': 'url("' + asset(ph.img) + '")' } : null }, ph ? null : icon('camera')),
+            isProc(m) ? h('span', { class: 'mv-dot', style: colorVars(a) }) : null,
             h('span', { class: 'mv-grow' }, h('b', null, a.name),
-              h('small', null, isProc(m) ? (a.processes || []).length + ' procesos' : areaChems(m, a).length + ' sustancias', ph ? null : h('span', { class: 'mv-pend' }, 'Foto pendiente')))));
+              h('small', null, isProc(m) ? (a.processes || []).length + ' procesos · ' + areaBadge(m, a) : areaChems(m, a).length + ' sustancias', ph ? null : h('span', { class: 'mv-pend' }, 'Foto pendiente'))),
+            isProc(m) && isDone(areaFrac(a)) ? h('span', { class: 'mv-pstate mv-ok' }, '✓') : null));
         });
       }
       if (!list.children.length) list.append(h('p', { style: { color: 'var(--muted)', padding: '12px' } }, 'Sin resultados.'));
     }
     fill();
-    side.append(tabs, h('div', { class: 'mv-search' }, input), list,
+    side.append(tabs, avance, h('div', { class: 'mv-search' }, input), list,
       h('div', { class: 'mv-foot' }, isProc(m) ? 'Toca un proceso para ver sus pasos. ' : 'Toca una sustancia para ver su ficha SGA. ', OPTIONS.footer || ''));
   }
 
@@ -751,17 +881,32 @@ function MapaViewerRuntime(DATA, ROOT, OPTIONS) {
         h('span', { class: 'mv-go' }, icon('next'))));
     });
     if (!ids.length) chemsBox.append(h('p', { style: { color: 'var(--muted)', margin: '4px' } }, 'No hay sustancias registradas en esta área.'));
+    var aprog = null;
     if (isProc(m)) {
       chemsBox = h('div', { class: 'mv-chems' });
-      (a.processes || []).forEach(function (p, i) {
-        var n = (p.steps || []).length;
-        var meta = [stepsLabel(n), p.owner, p.freq].filter(Boolean).join(' · ');
-        chemsBox.append(h('button', { type: 'button', class: 'mv-chem', onclick: function () { go({ proc: p.id, ficha: null }); } },
-          h('span', { class: 'mv-num', style: { background: 'var(--blue,#1565c0)' } }, String(i + 1)),
-          h('span', { class: 'mv-grow' }, h('b', null, p.name || 'Proceso'), h('small', null, meta)),
-          h('span', { class: 'mv-go' }, icon('next'))));
-      });
-      if (!(a.processes || []).length) chemsBox.append(h('p', { style: { color: 'var(--muted)', margin: '4px' } }, 'No hay procesos registrados en esta área.'));
+      aprog = h('div', { class: 'mv-aprog' });
+      var drawProcs = function () {
+        chemsBox.innerHTML = ''; aprog.innerHTML = '';
+        var af = areaFrac(a), aw = areaShare(m, a);
+        aprog.append(h('small', null, 'Avance del área: ', h('b', null, pct(af)), ' · aporta ', h('b', null, pct(aw * af)), ' de ', h('b', null, pct(aw)), ' del mapa'),
+          h('div', { class: 'mv-bar2' }, h('i', { style: { width: (af * 100) + '%' } })));
+        if (!(a.processes || []).length) {
+          aprog.append(h('button', { type: 'button', class: 'mv-mark', 'aria-pressed': String(!!doneArea[a.id]), onclick: function () { doneArea[a.id] = !doneArea[a.id]; refreshProgress(); } },
+            doneArea[a.id] ? '✓ Área completada · desmarcar' : 'Marcar área como completada'));
+        }
+        (a.processes || []).forEach(function (p, i) {
+          var n = (p.steps || []).length, f = procFrac(p);
+          var meta = [stepsLabel(n), p.owner, p.freq].filter(Boolean).join(' · ');
+          chemsBox.append(h('button', { type: 'button', class: 'mv-chem', onclick: function () { go({ proc: p.id, ficha: null }); } },
+            h('span', { class: 'mv-num', style: { background: a.color || 'var(--blue,#1565c0)', color: a.color ? textOn(a.color) : '#fff' } }, String(i + 1)),
+            h('span', { class: 'mv-grow' }, h('b', null, p.name || 'Proceso'), h('small', null, meta),
+              h('small', null, h('span', { class: 'mv-worth' }, 'Vale ' + pct(aw * procShare(a, p)) + ' del mapa'))),
+            isDone(f) ? h('span', { class: 'mv-pstate mv-ok', title: 'Completado' }, '✓') : h('span', { class: 'mv-pstate' }, pct(f)),
+            h('span', { class: 'mv-go' }, icon('next'))));
+        });
+        if (!(a.processes || []).length) chemsBox.append(h('p', { style: { color: 'var(--muted)', margin: '4px' } }, 'No hay procesos registrados en esta área.'));
+      };
+      drawProcs();
     }
 
     var mini = h('div', { class: 'mv-minimap', title: 'Ver en el mapa', onclick: function () { go({ area: null, ficha: null, proc: null }); setTimeout(function () { var v = views[m.id]; v.pz.focus(a.x / 100 * v.W, a.y / 100 * v.H, a.w / 100 * v.W, a.h / 100 * v.H, true); }, 30); } },
@@ -776,8 +921,9 @@ function MapaViewerRuntime(DATA, ROOT, OPTIONS) {
       h('div', { class: 'mv-av-body' },
         h('div', { class: 'mv-card' }, stage, thumbs, a.desc ? h('div', { class: 'mv-desc' }, a.desc) : null),
         h('div', null,
-          h('div', { class: 'mv-card' }, h('h3', null, isProc(m) ? 'Procesos en esta área' : 'Sustancias en esta área'), chemsBox),
+          h('div', { class: 'mv-card' }, h('h3', null, isProc(m) ? 'Procesos en esta área' : 'Sustancias en esta área'), aprog, chemsBox),
           h('div', { class: 'mv-card', style: { 'margin-top': '16px' } }, h('h3', null, 'Ubicación en el mapa'), mini))));
+    if (isProc(m)) areaView._refresh = drawProcs;
     mapwrap.appendChild(areaView);
   }
   function closeArea() { if (areaView) { areaView.remove(); areaView = null; } }
@@ -864,17 +1010,26 @@ function MapaViewerRuntime(DATA, ROOT, OPTIONS) {
       if (p.ppe) meta.push(h('span', null, icon('shield'), h('b', null, 'EPP:'), ' ' + p.ppe));
       if (meta.length) body.append(h('div', { class: 'mv-meta' }, meta));
       if (p.desc) body.append(h('p', { class: 'mv-pdesc' }, p.desc));
+      if (isProc(m)) {
+        var share = areaShare(m, a) * procShare(a, p);
+        body.append(h('div', { class: 'mv-meta' }, h('span', { class: 'mv-worth' }, 'Vale ' + pct(share) + ' del mapa (' + pct(procShare(a, p)) + ' del área)'),
+          steps.length ? h('span', null, 'Cada paso: ' + pct(share / steps.length)) : null));
+      }
       if (!steps.length) {
+        var mk = h('input', { type: 'checkbox' }); mk.checked = !!doneProc[p.id];
+        mk.addEventListener('change', function () { doneProc[p.id] = mk.checked; draw(); refreshProgress(); });
+        body.append(h('label', { class: 'mv-mark-proc' }, mk, 'Marcar proceso como completado'));
         body.append(h('div', { class: 'mv-nofile' }, icon('steps'), h('b', null, 'Pasos pendientes'), h('span', null, 'Los pasos de este proceso se agregarán posteriormente.')));
       } else {
         var nDone = steps.filter(function (s, i) { return done[i]; }).length;
         body.append(h('div', { class: 'mv-progress' }, h('span', null, nDone + ' de ' + steps.length + ' pasos'),
           h('div', null, h('i', { style: { width: (nDone / steps.length * 100) + '%' } })),
-          nDone ? h('button', { type: 'button', onclick: function () { checks[p.id] = done = {}; draw(); } }, 'Reiniciar') : null));
+          nDone < steps.length ? h('button', { type: 'button', class: 'mv-markall', onclick: function () { steps.forEach(function (x, i) { done[i] = true; }); draw(); refreshProgress(); } }, 'Marcar todos') : null,
+          nDone ? h('button', { type: 'button', onclick: function () { checks[p.id] = done = {}; draw(); refreshProgress(); } }, 'Reiniciar') : null));
         body.append(h('ol', { class: 'mv-steps' }, steps.map(function (s, i) {
           var cb = h('input', { type: 'checkbox', 'aria-label': 'Paso ' + (i + 1) + ' realizado' });
           cb.checked = !!done[i];
-          cb.addEventListener('change', function () { done[i] = cb.checked; draw(); });
+          cb.addEventListener('change', function () { done[i] = cb.checked; draw(); refreshProgress(); });
           return h('li', { class: 'mv-step' + (s.warn ? ' mv-warn' : '') + (done[i] ? ' mv-done' : '') },
             h('label', null, h('span', { class: 'mv-num' }, String(i + 1)), cb),
             h('div', null, h('div', { class: 'mv-step-t' }, s.text || ''),
@@ -936,6 +1091,7 @@ function MapaViewerRuntime(DATA, ROOT, OPTIONS) {
     var pr = state.proc ? procById(m, state.proc) : null;
     if (pr) renderProc(m, pr); else if (c) renderFicha(m, c); else closeFicha();
     renderSide();
+    refreshProgress();
   }
 
   document.addEventListener('keydown', function (e) {

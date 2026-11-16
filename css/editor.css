@@ -416,3 +416,20 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent-2); 
 .cells-draft { position: absolute; }
 .cells-draft .cf { fill: rgba(21,101,192,.38); }
 .cells-draft .ce { stroke: #0d47a1; stroke-width: calc(var(--inv) * 2.5px); }
+
+/* ---------- color y peso de áreas ---------- */
+.area-swatches { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.area-swatches .sw { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.25); padding: 0; }
+.area-swatches .sw.on { box-shadow: 0 0 0 2px var(--ink); }
+.area-swatches input[type=color] { width: 34px; height: 28px; border: 1px solid var(--line-2); border-radius: 7px; padding: 2px; background: #fff; }
+.warn-txt { color: #8a4b00; }
+.warn-txt:empty { display: none; }
+.cdot { flex: none; width: 12px; height: 12px; border-radius: 50%; background: var(--ac, var(--blue)); box-shadow: 0 0 0 1px rgba(0,0,0,.2); }
+.ed-area.colored { border-color: var(--ac) !important; background: var(--acf) !important; }
+.ed-area.colored:hover { background: var(--ach) !important; }
+.ed-area.colored .ed-area-tag { background: var(--ac) !important; color: var(--act); }
+.ed-area.colored .cells-svg .cf { fill: var(--acf) !important; }
+.ed-area.colored .cells-svg .ce { stroke: var(--ac) !important; }
+.ed-area.colored.shape-cells:hover .cf { fill: var(--ach) !important; }
+.ed-area.colored.sel { outline: calc(var(--inv) * 3px) dashed var(--head); outline-offset: calc(var(--inv) * 4px); }
+.ed-area-tag .badge.grey { background: rgba(255,255,255,.9); color: #1c2330; }

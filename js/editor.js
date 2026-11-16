@@ -149,6 +149,66 @@
   function selLabel() { var m = curMap(); return m && ui.sel && ui.sel.type === 'label' ? (m.labels || []).filter(function (x) { return x.id === ui.sel.id; })[0] : null; }
   function addAsset(data, prefix) { var id = uid(prefix || 'img'); project.assets[id] = data; return id; }
   function isProc(m) { return !!m && m.type === 'procesos'; }
+  var AREA_COLORS = ['#1565C0', '#2E7D32', '#C62828', '#EF6C00', '#6A1B9A', '#00838F', '#AD1457', '#F9A825', '#5D4037', '#455A64'];
+  function hexRgba(hex, al) {
+    var x = (hex || '').replace('#', ''); if (x.length === 3) x = x.replace(/./g, '$&$&');
+    var n = parseInt(x, 16); if (isNaN(n)) return '';
+    return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + al + ')';
+  }
+  function textOn(hex) {
+    var x = (hex || '').replace('#', ''); if (x.length === 3) x = x.replace(/./g, '$&$&');
+    var n = parseInt(x, 16); if (isNaN(n)) return '#fff';
+    return (0.299 * (n >> 16 & 255) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255 > 0.62 ? '#1c2330' : '#fff';
+  }
+  function colorVars(a) { return a.color ? { '--ac': a.color, '--acf': hexRgba(a.color, 0.18), '--ach': hexRgba(a.color, 0.3), '--act': textOn(a.color) } : {}; }
+  /* Pesos (mismo cálculo que el visor): los fijados en %, el resto se reparte por igual. */
+  function shares(items) {
+    var fixed = 0, auto = 0;
+    items.forEach(function (it) { var w = +it.weight; if (w > 0) fixed += w; else auto++; });
+    var rest = Math.max(0, 100 - fixed);
+    var ws = items.map(function (it) { var w = +it.weight; return w > 0 ? w : (auto ? rest / auto : 0); });
+    var tot = ws.reduce(function (t, w) { return t + w; }, 0) || 1;
+    return ws.map(function (w) { return w / tot; });
+  }
+  function fmtPct(x) { var v = Math.round(x * 1000) / 10; return (Math.abs(v - Math.round(v)) < 0.05 ? String(Math.round(v)) : v.toFixed(1).replace('.', ',')) + '%'; }
+  function areaShareOf(m, a) { return shares(m.areas)[m.areas.indexOf(a)] || 0; }
+  function procShareOf(a, pr) { return shares(a.processes)[a.processes.indexOf(pr)] || 0; }
+  function weightWarning(items, what) {
+    var fixed = 0, auto = 0;
+    items.forEach(function (it) { var w = +it.weight; if (w > 0) fixed += w; else auto++; });
+    if (fixed > 100.001) return 'Los pesos fijos de ' + what + ' suman ' + fmtPct(fixed / 100) + '; se ajustan proporcionalmente para que el total sea 100 %.';
+    if (auto && fixed >= 99.999) return 'Los pesos fijos de ' + what + ' ya suman 100 %: los que están en automático valen 0 %.';
+    return '';
+  }
+  /* Campo de peso: vacío = automático. */
+  function weightField(obj, onChange) {
+    var inp = h('input', { type: 'number', min: '0', max: '100', step: '0.5', placeholder: 'auto', style: { width: '90px' } });
+    inp.value = obj.weight > 0 ? String(obj.weight) : '';
+    var snap = null;
+    inp.addEventListener('focus', function () { snap = snapshot(); });
+    inp.addEventListener('input', function () {
+      if (snap) { pushUndo(snap); snap = null; }
+      var v = parseFloat(String(inp.value).replace(',', '.'));
+      if (v > 0) obj.weight = Math.min(100, v); else delete obj.weight;
+      scheduleSave(); onChange();
+    });
+    return inp;
+  }
+  function colorField(m, a) {
+    var pick = h('input', { type: 'color', value: (a.color || '#1565C0').toLowerCase(), title: 'Elegir otro color' });
+    var snap = null;
+    pick.addEventListener('focus', function () { snap = snapshot(); });
+    pick.addEventListener('input', function () { if (snap) { pushUndo(snap); snap = null; } a.color = pick.value.toUpperCase(); scheduleSave(); renderCanvas(); renderLeft(); });
+    pick.addEventListener('change', function () { renderRight(); });
+    return h('div', null,
+      h('div', { class: 'area-swatches' },
+        AREA_COLORS.map(function (c) {
+          return h('button', { class: 'sw' + (a.color === c ? ' on' : ''), title: c, 'aria-label': 'Color ' + c, style: { background: c }, onclick: function () { commit(function () { a.color = c; }); } });
+        }),
+        pick),
+      a.color ? h('button', { class: 'btn sm', style: { 'margin-top': '6px' }, onclick: function () { commit(function () { delete a.color; }); } }, 'Usar color predeterminado') : null);
+  }
+
   function procCount(m) { var n = 0; m.areas.forEach(function (a) { n += a.processes.length; }); return n; }
   function sortedChems() { return project.chemicals.slice().sort(function (a, b) { return a.name.localeCompare(b.name, 'es'); }); }
 
@@ -426,7 +486,8 @@
         shown++;
         var isSel = ui.sel && ui.sel.type === 'area' && ui.sel.id === a.id;
         var open = h('button', { class: 'tree-open', title: 'Seleccionar y centrar en el plano', onclick: function () { ui.sel = { type: 'area', id: a.id }; renderAll(); focusArea(a); } },
-          ic('area'), h('span', { class: 'grow' }, a.name || 'Área'),
+          h('span', { class: 'cdot', style: colorVars(a) }), h('span', { class: 'grow' }, a.name || 'Área'),
+          h('span', { class: 'badge grey', title: 'Peso en el mapa' }, fmtPct(areaShareOf(m, a))),
           h('span', { class: 'badge ' + (a.processes.length ? 'blue' : 'warn') }, a.processes.length ? a.processes.length + ' proc.' : 'sin procesos'));
         var node = h('div', { class: 'tree-area' + (isSel ? ' sel' : '') },
           h('div', { class: 'tree-head' }, open,
@@ -642,10 +703,13 @@
       var sel = ui.sel && ui.sel.type === 'area' && ui.sel.id === a.id;
       var sh = shapeOf(a);
       if (ui.cellDraft && ui.cellDraft.areaId === a.id) return; // se está editando su forma
-      var el = h('div', { class: 'ed-area shape-' + sh + (sel ? ' sel' : ''), 'data-kind': 'area', 'data-id': a.id,
-        style: { left: a.x + '%', top: a.y + '%', width: a.w + '%', height: a.h + '%' } },
+      var est = { left: a.x + '%', top: a.y + '%', width: a.w + '%', height: a.h + '%' };
+      var cvs = colorVars(a); for (var ck in cvs) est[ck] = cvs[ck];
+      var el = h('div', { class: 'ed-area shape-' + sh + (sel ? ' sel' : '') + (a.color ? ' colored' : ''), 'data-kind': 'area', 'data-id': a.id,
+        style: est },
         h('span', { class: 'ed-area-tag' }, a.name || 'Área',
           isProc(m) ? h('span', { class: 'badge ' + (a.processes.length ? 'blue' : 'warn') }, a.processes.length ? a.processes.length + (a.processes.length === 1 ? ' proceso' : ' procesos') : 'sin procesos') : null,
+          isProc(m) ? h('span', { class: 'badge grey', title: 'Peso en el avance del mapa' }, fmtPct(areaShareOf(m, a))) : null,
           a.photos.length ? null : h('span', { class: 'badge warn' }, 'foto pend.')));
       if (sh === 'cells' && a.grid) el.prepend(cellsSvg(a.grid.size, a.grid.cells));
       if (sel && sh !== 'cells') ['nw', 'ne', 'sw', 'se'].forEach(function (k) { el.append(h('span', { class: 'handle ' + k, 'data-kind': 'handle', 'data-h': k })); });
@@ -1122,7 +1186,9 @@
           h('div', { class: 'help', style: { 'margin-top': '4px' } }, empty.map(function (a) { return a.name; }).join(' · '))) : null,
         noSteps.length ? h('div', { style: { 'margin-top': '8px' } }, h('span', { class: 'badge warn' }, noSteps.length + ' procesos sin pasos'),
           h('div', { class: 'help', style: { 'margin-top': '4px' } }, noSteps.join(' · '))) : null,
-        pendAreas.length ? h('div', { style: { 'margin-top': '8px' } }, h('span', { class: 'badge warn' }, pendAreas.length + ' áreas con foto pendiente')) : null),
+        pendAreas.length ? h('div', { style: { 'margin-top': '8px' } }, h('span', { class: 'badge warn' }, pendAreas.length + ' áreas con foto pendiente')) : null,
+        m.areas.length ? h('p', { class: 'help', style: { 'margin-top': '8px' } }, 'Avance: cada área vale ' + (m.areas.every(function (a) { return !(a.weight > 0); }) ? fmtPct(1 / m.areas.length) : 'según su peso') + ' del mapa y sus procesos se reparten ese valor. Se puede fijar otro peso en el panel de cada área.') : null,
+        weightWarning(m.areas, 'las áreas') ? h('p', { class: 'help warn-txt' }, weightWarning(m.areas, 'las áreas')) : null),
       h('div', { class: 'sec' }, h('h4', null, 'Cómo editar'),
         h('p', { class: 'help' }, '1. Herramienta «Área»: delimita cada zona del plano.'),
         h('p', { class: 'help' }, '2. Selecciona el área: nombre, fotos y «+ Nuevo proceso».'),
@@ -1187,6 +1253,7 @@
         shapeOf(a) === 'cells'
           ? h('button', { class: 'btn block', style: { 'margin-top': '8px' }, onclick: function () { startEditCells(m, a); } }, ic('shCells'), 'Editar celdas')
           : h('p', { class: 'help', style: { margin: '8px 0 0' } }, 'Ajusta el tamaño con las esquinas. «Cuadrícula» convierte el área en celdas para formas irregulares.')),
+      isProc(m) ? colorWeightSection(m, a) : null,
       isProc(m) ? processesSection(m, a) : null,
       h('div', { class: 'sec' }, h('h4', null, h('span', null, 'Fotos del área'), a.photos.length ? h('span', { class: 'badge ok' }, a.photos.length) : h('span', { class: 'badge warn' }, 'Pendiente')),
         a.photos.length ? photos : h('div', { class: 'pending-box' }, ic('camera'), 'Foto pendiente. En el mapa exportado se mostrará «Foto pendiente» hasta que la agregues.'),
@@ -1211,13 +1278,31 @@
 
   // ---------------------------------------------------------------- procesos
   function newProcess() { return { id: uid('proc'), name: 'Nuevo proceso', desc: '', owner: '', freq: '', ppe: '', source: '', steps: [] }; }
+  function colorWeightSection(m, a) {
+    var info = h('p', { class: 'help', style: { margin: '6px 0 0' } });
+    var warn = h('p', { class: 'help warn-txt', style: { margin: '4px 0 0' } });
+    function upd() {
+      info.textContent = 'Vale ' + fmtPct(areaShareOf(m, a)) + ' del avance del mapa' + (a.weight > 0 ? ' (peso fijo).' : ' (automático: todas las áreas en automático valen lo mismo).');
+      warn.textContent = weightWarning(m.areas, 'las áreas');
+      renderCanvas(); renderLeft();
+    }
+    var wf = weightField(a, upd);
+    var sec = h('div', { class: 'sec' }, h('h4', null, 'Color del área'), colorField(m, a),
+      h('h4', { style: { 'margin-top': '12px' } }, 'Peso en el avance'),
+      h('div', { class: 'row' }, wf, h('span', null, '% del mapa'), h('span', { class: 'help', style: { margin: 0 } }, 'Vacío = automático')),
+      info, warn);
+    info.textContent = 'Vale ' + fmtPct(areaShareOf(m, a)) + ' del avance del mapa' + (a.weight > 0 ? ' (peso fijo).' : ' (automático: todas las áreas en automático valen lo mismo).');
+    warn.textContent = weightWarning(m.areas, 'las áreas');
+    return sec;
+  }
+
   function processesSection(m, a) {
     var list = h('div', { class: 'chips' });
     a.processes.forEach(function (pr, i) {
       list.append(h('div', { class: 'chip proc-chip' },
         h('span', { class: 'step-num' }, String(i + 1)),
         h('button', { class: 'grow proc-open', title: 'Editar proceso', onclick: function () { openProcessEditor(m, a, pr.id); } },
-          h('b', null, pr.name || 'Proceso'), h('small', null, pr.steps.length + (pr.steps.length === 1 ? ' paso' : ' pasos'))),
+          h('b', null, pr.name || 'Proceso'), h('small', null, pr.steps.length + (pr.steps.length === 1 ? ' paso' : ' pasos') + ' · ' + fmtPct(procShareOf(a, pr)) + ' del área · ' + fmtPct(areaShareOf(m, a) * procShareOf(a, pr)) + ' del mapa')),
         h('button', { title: 'Subir', 'aria-label': 'Subir', disabled: i === 0, onclick: function () { commit(function () { a.processes.splice(i - 1, 0, a.processes.splice(i, 1)[0]); }); } }, ic('up')),
         h('button', { title: 'Bajar', 'aria-label': 'Bajar', disabled: i === a.processes.length - 1, onclick: function () { commit(function () { a.processes.splice(i + 1, 0, a.processes.splice(i, 1)[0]); }); } }, ic('down')),
         h('button', { title: 'Duplicar', 'aria-label': 'Duplicar proceso', onclick: function () { commit(function () { var c = clone(pr); c.id = uid('proc'); c.name = pr.name + ' (copia)'; a.processes.splice(i + 1, 0, c); }); } }, ic('copy')),
@@ -1281,6 +1366,14 @@
           field('EPP requerido', bindText(h('input', { placeholder: 'p. ej. Gafas, guantes de nitrilo' }), function () { return p.ppe; }, function (v) { p.ppe = v; }, keep))),
         field('Objetivo / descripción (opcional)', bindText(h('textarea', { rows: '2' }), function () { return p.desc; }, function (v) { p.desc = v; }, keep)),
         field('Referencia (código de procedimiento, documento…)', bindText(h('input'), function () { return p.source; }, function (v) { p.source = v; }, keep)),
+        (function () {
+          var curA = function () { var mm = project.maps.filter(function (x) { return x.id === m.id; })[0]; return mm.areas.filter(function (x) { return x.id === a.id; })[0]; };
+          var mm0 = project.maps.filter(function (x) { return x.id === m.id; })[0];
+          var info = h('span', { class: 'help', style: { margin: 0 } });
+          var upd = function () { var aa = curA(); info.textContent = 'Vale ' + fmtPct(procShareOf(aa, p)) + ' del área y ' + fmtPct(areaShareOf(mm0, aa) * procShareOf(aa, p)) + ' del mapa' + (p.weight > 0 ? ' (peso fijo).' : ' (automático).') + (weightWarning(aa.processes, 'los procesos del área') ? ' ' + weightWarning(aa.processes, 'los procesos del área') : ''); };
+          upd();
+          return h('div', { class: 'field' }, h('span', null, 'Peso dentro del área (%)'), h('div', { class: 'row' }, weightField(p, upd), info));
+        })(),
         h('h4', { class: 'proc-h' }, 'Pasos (' + p.steps.length + ')'),
         p.steps.length ? steps : h('div', { class: 'pending-box', style: { 'margin-bottom': '10px' } }, 'Todavía no hay pasos. Agrégalos uno a uno o pega una lista.'),
         h('div', { class: 'row wrap', style: { margin: '10px 0' } },

@@ -335,12 +335,18 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
 <figure><img src="img/ed-area-procesos.webp" alt="Panel de un área con procesos" loading="lazy"><figcaption>Área seleccionada en un mapa de procesos: en el panel derecho, primero sus procesos y luego sus fotos.</figcaption></figure>
 <div class="warn"><b>Contenido oficial</b>Copia los pasos del procedimiento aprobado de la planta y anota su código en «Referencia», para que quien lo consulte sepa de qué documento sale.</div>
 
+<h4>Color y peso de cada área</h4>
+<ul>
+  <li><b>Color</b>: en el panel del área, sección <b>Color del área</b>, elige una muestra o cualquier color con el selector. <span class="ui">Usar color predeterminado</span> vuelve al azul.</li>
+  <li><b>Peso en el avance</b>: por defecto todas las áreas valen lo mismo (4 áreas → 25 % cada una) y, dentro de cada área, sus procesos se reparten ese valor por igual (5 procesos en un área de 25 % → 5 % cada uno). Puedes fijar otro peso en <b>Peso en el avance</b> (área) o <b>Peso dentro del área</b> (en el editor del proceso). Si lo dejas vacío queda en automático y se reparte lo que falte hasta 100 %. El panel muestra cuánto vale cada uno.</li>
+</ul>
 <h3 id="pr-ver">8.3 Cómo se consulta un mapa de procesos</h3>
 <ul>
   <li>Al tocar un área se ven sus fotos y la lista <b>Procesos en esta área</b>.</li>
   <li>Al tocar un proceso se abre con su responsable, frecuencia y EPP, y los pasos numerados. Los pasos críticos aparecen en naranja con su nota; las imágenes se amplían al tocarlas.</li>
   <li>Cada paso tiene una casilla para <b>ir marcándolo</b> mientras se ejecuta, con una barra de progreso («2 de 4 pasos»). Las marcas son solo de apoyo en pantalla: <b>no se guardan</b> y se pierden al cerrar el archivo.</li>
   <li>La leyenda tiene las pestañas <b>Procesos</b> (todos los procesos del mapa, con buscador) y <b>Áreas</b>.</li>
+  <li><b>Avance</b>: cada área muestra en su etiqueta su porcentaje (por ejemplo «12,5 / 25%») y un <b>✓</b> verde cuando está completa. La cabecera muestra el avance total del mapa y, al tocarlo, se abre el detalle por área con el botón <span class="ui">Reiniciar</span>. Un proceso sin pasos se marca con <b>Marcar proceso como completado</b>; un área sin procesos, con <b>Marcar área como completada</b>. Como el resto de marcas, el avance no se guarda al cerrar el archivo.</li>
 </ul>
 <div class="duo">
 <figure><img src="img/vi-proceso.webp" alt="Proceso abierto en PC" loading="lazy"><figcaption>Proceso abierto en PC, con dos pasos marcados.</figcaption></figure>
