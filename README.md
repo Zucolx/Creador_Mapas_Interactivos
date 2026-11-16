@@ -28,7 +28,7 @@ El manual completo, con capturas, está en [`manual/index.html`](manual/index.ht
 ## Tipos de mapa
 
 - **Mapa de químicos**: áreas con pictogramas de sustancias y fichas SGA (como L1 y L2).
-- **Mapa de procesos**: se delimitan áreas y dentro de cada una se agregan los procesos que se deben seguir, con sus pasos en orden (responsable, frecuencia, EPP, pasos críticos e imágenes de apoyo). Cada área puede tener su propio color. En el HTML exportado cada paso se puede ir marcando mientras se ejecuta y se muestra el avance: porcentaje por área (todas valen lo mismo por defecto y sus procesos se reparten ese valor; se pueden fijar pesos), ✓ en las áreas completadas y avance total en la cabecera (las marcas no se guardan).
+- **Mapa de procesos**: se delimitan áreas y dentro de cada una se agregan los procesos que se deben seguir, con sus pasos en orden (responsable, frecuencia, EPP, pasos críticos e imágenes de apoyo). Cada área puede tener su propio color. En el HTML exportado cada paso se puede ir marcando mientras se ejecuta y se muestra el avance: porcentaje por área (todas valen lo mismo por defecto y sus procesos se reparten ese valor; se pueden fijar pesos), ✓ en las áreas completadas y avance total en la cabecera (las marcas no se guardan). El avance se puede **descargar en Excel** (.xlsx generado en el propio HTML, sin internet): una columna Sí/No por área/proceso con su columna de fecha y hora, más una hoja de detalle por paso.
 
 Las áreas pueden ser **rectángulos**, **círculos/elipses** o formas irregulares pintadas sobre una **cuadrícula** de tamaño ajustable.
 

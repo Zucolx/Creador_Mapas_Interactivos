@@ -347,6 +347,10 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
   <li>Cada paso tiene una casilla para <b>ir marcándolo</b> mientras se ejecuta, con una barra de progreso («2 de 4 pasos»). Las marcas son solo de apoyo en pantalla: <b>no se guardan</b> y se pierden al cerrar el archivo.</li>
   <li>La leyenda tiene las pestañas <b>Procesos</b> (todos los procesos del mapa, con buscador) y <b>Áreas</b>.</li>
   <li><b>Avance</b>: cada área muestra en su etiqueta su porcentaje (por ejemplo «12,5 / 25%») y un <b>✓</b> verde cuando está completa. La cabecera muestra el avance total del mapa y, al tocarlo, se abre el detalle por área con el botón <span class="ui">Reiniciar</span>. Un proceso sin pasos se marca con <b>Marcar proceso como completado</b>; un área sin procesos, con <b>Marcar área como completada</b>. Como el resto de marcas, el avance no se guarda al cerrar el archivo.</li>
+  <li><b>Excel del avance</b>: botón <span class="ui">Descargar Excel del avance</span> (en el panel de avance de la leyenda) o <span class="ui">Excel</span> (en la vista de cada área). Descarga un archivo <code>.xlsx</code> con dos hojas:
+    <ul><li><b>Registro</b>: por cada área/proceso, una columna <b>Hecho</b> (Sí / No, en verde o rojo) y a su lado una columna <b>Fecha y hora</b> en que se completó; al inicio, el mapa, la fecha de exportación y el avance total.</li>
+    <li><b>Detalle</b>: una fila por área, proceso y paso, con Sí / No, fecha y hora, peso en el mapa y responsable.</li></ul>
+    La fecha y hora es la del momento en que se marcó cada paso o proceso en esta sesión. Descarga el Excel antes de cerrar el mapa, porque las marcas no se guardan.</li>
 </ul>
 <div class="duo">
 <figure><img src="img/vi-proceso.webp" alt="Proceso abierto en PC" loading="lazy"><figcaption>Proceso abierto en PC, con dos pasos marcados.</figcaption></figure>
@@ -548,6 +552,8 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
 <h2>16. Problemas y preguntas frecuentes</h2>
 <details><summary>¿Se guardan los pasos que marco al seguir un proceso?</summary>
 <p>No. Las casillas de los pasos son una ayuda en pantalla mientras se ejecuta el proceso; el archivo no guarda nada en el equipo ni en internet. Si se necesita registro de ejecución, debe hacerse en el formato oficial de la planta.</p></details>
+<details><summary>Pulso «Descargar Excel del avance» y no se descarga nada.</summary>
+<p>Algunos visores, como la vista previa de SharePoint, muestran el HTML en un marco aislado que puede bloquear las descargas; en ese caso el mapa muestra un aviso. Descarga el archivo HTML y ábrelo directamente en el navegador (o publícalo en una dirección web) y la descarga funcionará.</p></details>
 <details><summary>Cambié algo en el editor pero el mapa que tienen en planta no cambió.</summary>
 <p>Los HTML exportados son copias fijas. Exporta de nuevo y reemplaza el archivo publicado.</p></details>
 <details><summary>Abrí el editor y no aparecen mis cambios.</summary>

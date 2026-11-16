@@ -214,6 +214,11 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
 .mv-markall{border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 9px;font-size:12px}
 .mv-mark-proc{display:flex;align-items:center;gap:10px;margin:10px 16px 0;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;font-weight:600;cursor:pointer}
 .mv-mark-proc input{width:20px;height:20px;accent-color:var(--ok)}
+.mv-xls{display:flex!important;float:none!important;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:8px;border:1px solid #2e7d32!important;color:#1b5e20;background:#fff;border-radius:9px!important;padding:7px 10px!important;font-size:13px!important;font-weight:700}
+.mv-xls svg{width:17px;height:17px}
+.mv-toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:70;background:var(--head);color:#fff;padding:10px 14px;border-radius:10px;font-size:13.5px;max-width:min(560px,calc(100% - 24px));box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.mv-xls:hover{background:#e8f5e9}
+.mv-xls.mv-xls-sm{display:inline-flex!important;width:auto;float:right!important;margin:0 0 6px 8px;padding:3px 9px!important;font-size:12px!important}
 /* --- formas de área --- */
 .mv-sh-ellipse{border-radius:50%!important}
 .mv-area.mv-sh-cells{border:0!important;background:none!important;pointer-events:none}
@@ -301,6 +306,7 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
     user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
     clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
     shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/></svg>',
+    xls: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6 2h8l5 5v15H6z"/><path d="M14 2v5h5"/><path d="M9 12l5 6M14 12l-5 6" stroke-linecap="round"/></svg>',
     doc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6 2h8l5 5v15H6z"/><path d="M14 2v5h5M9 13h7M9 17h7"/></svg>'
   };
 
@@ -391,6 +397,9 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
      los que quedan en automático se reparten lo que falta hasta 100 %.
      Las marcas viven solo en memoria: no se guardan al cerrar el archivo. */
   var doneProc = {}, doneArea = {};
+  var stepTime = {}, procTime = {}, areaTime = {};   // fecha y hora de cada marca (en memoria)
+  function stamp(map, key, on) { if (on) map[key] = new Date(); else delete map[key]; }
+  function stepStamp(pid, i, on) { var t = stepTime[pid] || (stepTime[pid] = {}); stamp(t, i, on); }
   function shares(items) {
     var fixed = 0, auto = 0;
     items.forEach(function (it) { var w = +it.weight; if (w > 0) fixed += w; else auto++; });
@@ -425,7 +434,7 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
     if (isDone(f)) return '✓ ' + pct(w);
     return f > 0 ? pct(w * f, true) + ' / ' + pct(w) : pct(w);
   }
-  function resetProgress() { checks = {}; doneProc = {}; doneArea = {}; }
+  function resetProgress() { checks = {}; doneProc = {}; doneArea = {}; stepTime = {}; procTime = {}; areaTime = {}; }
 
   function stepsLabel(n) { return n + (n === 1 ? ' paso' : ' pasos'); }
 
@@ -735,6 +744,144 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
     if (!side.hidden) renderSide();
   }
 
+  // ------------------------------------------------- Excel del avance (.xlsx)
+  /* Genera un .xlsx real (zip sin compresión + SpreadsheetML) en el propio
+     navegador, sin librerías ni conexión. */
+  function xmlEsc(v) { return String(v == null ? '' : v).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, ''); }
+  function colName(i) { var s = ''; i++; while (i > 0) { var r = (i - 1) % 26; s = String.fromCharCode(65 + r) + s; i = Math.floor((i - 1) / 26); } return s; }
+  function excelDate(d) { return (Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds()) / 86400000) + 25569; }
+  /* Celda: {v, s} con v texto, número o Date; s = estilo. */
+  function sheetXml(rows, widths, merges, freezeRows) {
+    var x = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">';
+    if (freezeRows) x += '<sheetViews><sheetView workbookViewId="0"><pane ySplit="' + freezeRows + '" topLeftCell="A' + (freezeRows + 1) + '" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>';
+    if (widths && widths.length) x += '<cols>' + widths.map(function (w, i) { return '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>'; }).join('') + '</cols>';
+    x += '<sheetData>';
+    rows.forEach(function (row, r) {
+      x += '<row r="' + (r + 1) + '">';
+      row.forEach(function (c, ci) {
+        if (c == null) return;
+        var ref = colName(ci) + (r + 1), st = c.s ? ' s="' + c.s + '"' : '', v = c.v;
+        if (v instanceof Date) x += '<c r="' + ref + '" s="' + (c.s || 4) + '"><v>' + excelDate(v) + '</v></c>';
+        else if (typeof v === 'number') x += '<c r="' + ref + '"' + st + '><v>' + v + '</v></c>';
+        else if (v == null || v === '') x += c.s ? '<c r="' + ref + '"' + st + '/>' : '';
+        else x += '<c r="' + ref + '"' + st + ' t="inlineStr"><is><t xml:space="preserve">' + xmlEsc(v) + '</t></is></c>';
+      });
+      x += '</row>';
+    });
+    x += '</sheetData>';
+    if (merges && merges.length) x += '<mergeCells count="' + merges.length + '">' + merges.map(function (m) { return '<mergeCell ref="' + m + '"/>'; }).join('') + '</mergeCells>';
+    return x + '</worksheet>';
+  }
+  var XLSX_STYLES = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+    '<numFmts count="2"><numFmt numFmtId="164" formatCode="dd/mm/yyyy hh:mm"/><numFmt numFmtId="165" formatCode="0.0%"/></numFmts>' +
+    '<fonts count="3"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts>' +
+    '<fills count="6"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>' +
+    '<fill><patternFill patternType="solid"><fgColor rgb="FF1F2A37"/></patternFill></fill>' +
+    '<fill><patternFill patternType="solid"><fgColor rgb="FFC8E6C9"/></patternFill></fill>' +
+    '<fill><patternFill patternType="solid"><fgColor rgb="FFFFCDD2"/></patternFill></fill>' +
+    '<fill><patternFill patternType="solid"><fgColor rgb="FFE3EAF5"/></patternFill></fill></fills>' +
+    '<borders count="2"><border/><border><left style="thin"><color rgb="FFBFC5CE"/></left><right style="thin"><color rgb="FFBFC5CE"/></right><top style="thin"><color rgb="FFBFC5CE"/></top><bottom style="thin"><color rgb="FFBFC5CE"/></bottom></border></borders>' +
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="9">' +
+    '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>' +                                                                                                   // 0 normal
+    '<xf numFmtId="0" xfId="0" fontId="1" fillId="2" borderId="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>' + // 1 encabezado
+    '<xf numFmtId="0" xfId="0" fontId="2" fillId="3" borderId="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>' + // 2 Sí
+    '<xf numFmtId="0" xfId="0" fontId="2" fillId="4" borderId="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>' + // 3 No
+    '<xf fontId="0" fillId="0" xfId="0" numFmtId="164" borderId="1" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>' + // 4 fecha y hora
+    '<xf numFmtId="0" fontId="0" fillId="0" xfId="0" borderId="1" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>' +       // 5 texto con borde
+    '<xf fontId="0" fillId="0" xfId="0" numFmtId="165" borderId="1" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>' + // 6 porcentaje
+    '<xf numFmtId="0" xfId="0" fontId="2" fillId="5" borderId="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>' + // 7 subencabezado
+    '<xf numFmtId="0" fillId="0" borderId="0" xfId="0" fontId="2" applyFont="1"/>' +                                                                          // 8 negrita
+    '</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+  var CRC = (function () { var t = []; for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  function crc32(b) { var c = 0xFFFFFFFF; for (var i = 0; i < b.length; i++) c = CRC[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+  function zip(files) {
+    var enc = new TextEncoder(), parts = [], central = [], offset = 0;
+    function u16(v) { return [v & 255, v >> 8 & 255]; }
+    function u32(v) { return [v & 255, v >> 8 & 255, v >> 16 & 255, v >>> 24 & 255]; }
+    files.forEach(function (f) {
+      var name = enc.encode(f.name), data = enc.encode(f.data), crc = crc32(data);
+      var head = [].concat(u32(0x04034b50), u16(20), u16(0x0800), u16(0), u16(0), u16(0x21), u32(crc), u32(data.length), u32(data.length), u16(name.length), u16(0));
+      parts.push(new Uint8Array(head), name, data);
+      central.push(new Uint8Array([].concat(u32(0x02014b50), u16(20), u16(20), u16(0x0800), u16(0), u16(0), u16(0x21), u32(crc), u32(data.length), u32(data.length), u16(name.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(offset))), name);
+      offset += head.length + name.length + data.length;
+    });
+    var csize = central.reduce(function (t, b) { return t + b.length; }, 0);
+    var end = new Uint8Array([].concat(u32(0x06054b50), u16(0), u16(0), u16(files.length), u16(files.length), u32(csize), u32(offset), u16(0)));
+    return new Blob(parts.concat(central, [end]), { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  }
+  function procDoneTime(p) {
+    var st = p.steps || [];
+    if (!st.length) return doneProc[p.id] ? procTime[p.id] : null;
+    if (!isDone(procFrac(p))) return null;
+    var t = stepTime[p.id] || {}, last = null;
+    st.forEach(function (x, i) { if (t[i] && (!last || t[i] > last)) last = t[i]; });
+    return last;
+  }
+  function yesNo(v) { return { v: v ? 'Sí' : 'No', s: v ? 2 : 3 }; }
+  function buildXlsx(m) {
+    var now = new Date();
+    // Hoja «Registro»: una columna Sí/No por área/proceso con su columna paralela de fecha y hora
+    var r1 = [{ v: 'Mapa', s: 1 }, { v: 'Exportado el', s: 1 }, { v: 'Avance total', s: 1 }];
+    var r2 = [{ v: '', s: 1 }, { v: '', s: 1 }, { v: '', s: 1 }];
+    var r3 = [{ v: (m.name || '') + (m.subtitle ? ' · ' + m.subtitle : ''), s: 5 }, { v: now, s: 4 }, { v: mapFrac(m), s: 6 }];
+    var merges = ['A1:A2', 'B1:B2', 'C1:C2'], widths = [24, 18, 12], col = 3;
+    (m.areas || []).forEach(function (a) {
+      var items = (a.processes || []).length ? a.processes.map(function (p) { return { name: p.name || 'Proceso', done: isDone(procFrac(p)), at: procDoneTime(p) }; })
+        : [{ name: '(área completa)', done: !!doneArea[a.id], at: doneArea[a.id] ? areaTime[a.id] : null }];
+      var start = col;
+      items.forEach(function (it, i) {
+        r1[col] = { v: i === 0 ? a.name : '', s: 1 }; r1[col + 1] = { v: '', s: 1 };
+        r2[col] = { v: it.name + ' · Hecho', s: 7 }; r2[col + 1] = { v: it.name + ' · Fecha y hora', s: 7 };
+        r3[col] = yesNo(it.done); r3[col + 1] = it.at ? { v: it.at, s: 4 } : { v: '', s: 5 };
+        widths[col] = 16; widths[col + 1] = 18;
+        col += 2;
+      });
+      merges.push(colName(start) + '1:' + colName(col - 1) + '1');
+    });
+    // Hoja «Detalle»: una fila por área, proceso y paso
+    var det = [[{ v: 'Área', s: 1 }, { v: 'Proceso', s: 1 }, { v: 'Paso', s: 1 }, { v: 'Hecho', s: 1 }, { v: 'Fecha y hora', s: 1 }, { v: 'Peso en el mapa', s: 1 }, { v: 'Responsable', s: 1 }]];
+    (m.areas || []).forEach(function (a) {
+      var aw = areaShare(m, a);
+      if (!(a.processes || []).length) det.push([{ v: a.name, s: 5 }, { v: '(sin procesos)', s: 5 }, { v: '', s: 5 }, yesNo(!!doneArea[a.id]), doneArea[a.id] && areaTime[a.id] ? { v: areaTime[a.id], s: 4 } : { v: '', s: 5 }, { v: aw, s: 6 }, { v: '', s: 5 }]);
+      (a.processes || []).forEach(function (p) {
+        var pw = aw * procShare(a, p), st = p.steps || [], d = checks[p.id] || {}, t = stepTime[p.id] || {};
+        var pt = procDoneTime(p);
+        det.push([{ v: a.name, s: 5 }, { v: p.name || 'Proceso', s: 5 }, { v: st.length ? '(proceso completo)' : '(sin pasos)', s: 5 }, yesNo(isDone(procFrac(p))), pt ? { v: pt, s: 4 } : { v: '', s: 5 }, { v: pw, s: 6 }, { v: p.owner || '', s: 5 }]);
+        st.forEach(function (x, i) {
+          det.push([{ v: a.name, s: 5 }, { v: p.name || 'Proceso', s: 5 }, { v: (i + 1) + '. ' + (x.text || ''), s: 5 }, yesNo(!!d[i]), d[i] && t[i] ? { v: t[i], s: 4 } : { v: '', s: 5 }, { v: pw / st.length, s: 6 }, { v: p.owner || '', s: 5 }]);
+        });
+      });
+    });
+    var files = [
+      { name: '[Content_Types].xml', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>' },
+      { name: '_rels/.rels', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>' },
+      { name: 'xl/workbook.xml', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Registro" sheetId="1" r:id="rId1"/><sheet name="Detalle" sheetId="2" r:id="rId2"/></sheets></workbook>' },
+      { name: 'xl/_rels/workbook.xml.rels', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>' },
+      { name: 'xl/styles.xml', data: XLSX_STYLES },
+      { name: 'xl/worksheets/sheet1.xml', data: sheetXml([r1, r2, r3], widths, merges, 2) },
+      { name: 'xl/worksheets/sheet2.xml', data: sheetXml(det, [26, 30, 46, 10, 18, 14, 22], [], 1) }
+    ];
+    return zip(files);
+  }
+  function downloadXlsx(m) {
+    var d = new Date(), z = function (n) { return (n < 10 ? '0' : '') + n; };
+    var name = 'Avance_' + (m.name || 'mapa').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '') +
+      '_' + d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()) + '_' + z(d.getHours()) + z(d.getMinutes()) + '.xlsx';
+    var url = URL.createObjectURL(buildXlsx(m));
+    var a = h('a', { href: url, download: name, style: { display: 'none' } });
+    root.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+    // Dentro de visores que aíslan el archivo (p. ej. vista previa de SharePoint) la descarga puede estar bloqueada.
+    if (location.protocol === 'about:' || window.top !== window.self) {
+      notice('Si el Excel no se descargó, este visor bloquea las descargas: descarga el archivo HTML y ábrelo directamente en el navegador.');
+    }
+  }
+  function notice(text) {
+    var n = h('div', { class: 'mv-toast', role: 'status' }, text);
+    root.appendChild(n);
+    setTimeout(function () { n.remove(); }, 9000);
+  }
+
   // --------------------------------------------------------------- leyenda
   function usedChems(m) {
     var count = {};
@@ -781,7 +928,8 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
         h('b', null, h('span', null, 'Avance del mapa'), h('span', null, pct(mf))),
         h('div', { class: 'mv-bar2' }, h('i', { style: { width: (mf * 100) + '%' } })),
         mf > 0 ? h('button', { type: 'button', onclick: function () { if (confirm('¿Borrar todas las marcas de avance?')) { resetProgress(); closeFicha(); render(); refreshProgress(); } } }, 'Reiniciar') : null,
-        h('small', null, nDoneA + ' de ' + (m.areas || []).length + ' áreas completadas · las marcas no se guardan al cerrar'));
+        h('small', null, nDoneA + ' de ' + (m.areas || []).length + ' áreas completadas · las marcas no se guardan al cerrar'),
+        h('button', { type: 'button', class: 'mv-xls', onclick: function () { downloadXlsx(m); } }, icon('xls'), 'Descargar Excel del avance'));
     }
     input.addEventListener('input', function () { state.q = input.value; fill(); });
     function fill() {
@@ -897,10 +1045,11 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
       var drawProcs = function () {
         chemsBox.innerHTML = ''; aprog.innerHTML = '';
         var af = areaFrac(a), aw = areaShare(m, a);
+        aprog.append(h('button', { type: 'button', class: 'mv-xls mv-xls-sm', title: 'Descargar el avance del mapa en Excel', onclick: function () { downloadXlsx(m); } }, icon('xls'), 'Excel'));
         aprog.append(h('small', null, 'Avance del área: ', h('b', null, pct(af)), ' · aporta ', h('b', null, pct(aw * af)), ' de ', h('b', null, pct(aw)), ' del mapa'),
           h('div', { class: 'mv-bar2' }, h('i', { style: { width: (af * 100) + '%' } })));
         if (!(a.processes || []).length) {
-          aprog.append(h('button', { type: 'button', class: 'mv-mark', 'aria-pressed': String(!!doneArea[a.id]), onclick: function () { doneArea[a.id] = !doneArea[a.id]; refreshProgress(); } },
+          aprog.append(h('button', { type: 'button', class: 'mv-mark', 'aria-pressed': String(!!doneArea[a.id]), onclick: function () { doneArea[a.id] = !doneArea[a.id]; stamp(areaTime, a.id, doneArea[a.id]); refreshProgress(); } },
             doneArea[a.id] ? '✓ Área completada · desmarcar' : 'Marcar área como completada'));
         }
         (a.processes || []).forEach(function (p, i) {
@@ -1026,19 +1175,19 @@ var MAPA_DATA = {"name":"Mapas de sustancias químicas · Envase","chemicals":[{
       }
       if (!steps.length) {
         var mk = h('input', { type: 'checkbox' }); mk.checked = !!doneProc[p.id];
-        mk.addEventListener('change', function () { doneProc[p.id] = mk.checked; draw(); refreshProgress(); });
+        mk.addEventListener('change', function () { doneProc[p.id] = mk.checked; stamp(procTime, p.id, mk.checked); draw(); refreshProgress(); });
         body.append(h('label', { class: 'mv-mark-proc' }, mk, 'Marcar proceso como completado'));
         body.append(h('div', { class: 'mv-nofile' }, icon('steps'), h('b', null, 'Pasos pendientes'), h('span', null, 'Los pasos de este proceso se agregarán posteriormente.')));
       } else {
         var nDone = steps.filter(function (s, i) { return done[i]; }).length;
         body.append(h('div', { class: 'mv-progress' }, h('span', null, nDone + ' de ' + steps.length + ' pasos'),
           h('div', null, h('i', { style: { width: (nDone / steps.length * 100) + '%' } })),
-          nDone < steps.length ? h('button', { type: 'button', class: 'mv-markall', onclick: function () { steps.forEach(function (x, i) { done[i] = true; }); draw(); refreshProgress(); } }, 'Marcar todos') : null,
-          nDone ? h('button', { type: 'button', onclick: function () { checks[p.id] = done = {}; draw(); refreshProgress(); } }, 'Reiniciar') : null));
+          nDone < steps.length ? h('button', { type: 'button', class: 'mv-markall', onclick: function () { steps.forEach(function (x, i) { if (!done[i]) stepStamp(p.id, i, true); done[i] = true; }); draw(); refreshProgress(); } }, 'Marcar todos') : null,
+          nDone ? h('button', { type: 'button', onclick: function () { checks[p.id] = done = {}; delete stepTime[p.id]; draw(); refreshProgress(); } }, 'Reiniciar') : null));
         body.append(h('ol', { class: 'mv-steps' }, steps.map(function (s, i) {
           var cb = h('input', { type: 'checkbox', 'aria-label': 'Paso ' + (i + 1) + ' realizado' });
           cb.checked = !!done[i];
-          cb.addEventListener('change', function () { done[i] = cb.checked; draw(); refreshProgress(); });
+          cb.addEventListener('change', function () { done[i] = cb.checked; stepStamp(p.id, i, cb.checked); draw(); refreshProgress(); });
           return h('li', { class: 'mv-step' + (s.warn ? ' mv-warn' : '') + (done[i] ? ' mv-done' : '') },
             h('label', null, h('span', { class: 'mv-num' }, String(i + 1)), cb),
             h('div', null, h('div', { class: 'mv-step-t' }, s.text || ''),
