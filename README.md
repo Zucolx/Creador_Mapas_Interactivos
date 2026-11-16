@@ -30,6 +30,8 @@ El manual completo, con capturas, está en [`manual/index.html`](manual/index.ht
 - **Mapa de químicos**: áreas con pictogramas de sustancias y fichas SGA (como L1 y L2).
 - **Mapa de procesos**: se delimitan áreas y dentro de cada una se agregan los procesos que se deben seguir, con sus pasos en orden (responsable, frecuencia, EPP, pasos críticos e imágenes de apoyo). En el HTML exportado cada paso se puede ir marcando mientras se ejecuta (las marcas no se guardan).
 
+Las áreas pueden ser **rectángulos**, **círculos/elipses** o formas irregulares pintadas sobre una **cuadrícula** de tamaño ajustable.
+
 Cada mapa de la lista se puede **clonar** (copia exacta, o como mapa del otro tipo conservando plano, áreas y fotos) o **eliminar** (con deshacer).
 
 ## Usar el editor

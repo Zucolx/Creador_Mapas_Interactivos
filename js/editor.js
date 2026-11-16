@@ -46,6 +46,9 @@
     pdf: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6 2h8l5 5v15H6z"/><path d="M14 2v5h5"/><path d="M9 13h1.5a1.5 1.5 0 0 1 0 3H9v-4.5M13.5 16.5v-4.5h1a2 2 0 0 1 0 4.5z"/></svg>',
     help: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17v.5"/></svg>',
     steps: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v2h6V3M8.5 10l1.5 1.5 3-3M8.5 16l1.5 1.5 3-3"/></svg>',
+    shRect: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="6" width="16" height="12" rx="1.5"/></svg>',
+    shEllipse: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="12" rx="8.5" ry="7"/></svg>',
+    shCells: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h6v6H4zM10 4h6v6h-6zM10 10h6v6h-6zM16 10h4v6h-4zM4 14h6v6H4z" fill="currentColor" fill-opacity=".25"/></svg>',
     edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>',
     flask: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M9 3h6M10 3v6L4.5 19A1.5 1.5 0 0 0 6 21h12a1.5 1.5 0 0 0 1.4-2L14 9V3"/><path d="M7 15h10"/></svg>'
   };
@@ -133,7 +136,7 @@
   var project = null;
   var ui = {
     left: 'maps', view: 'map', mapId: null, chemId: null, sel: null, tool: 'select', toolChem: null,
-    chemQuery: '', views: {}, menu: null
+    chemQuery: '', views: {}, menu: null, areaShape: 'rect', cellDraft: null
   };
   var undoStack = [], redoStack = [];
   var saveTimer = null, saveState = 'Guardado';
@@ -484,23 +487,63 @@
     }
     var hints = {
       select: 'Clic para seleccionar · arrastra para mover · arrastra el fondo para desplazar · rueda para zoom',
-      area: 'Dibuja un rectángulo sobre el plano para crear un área clicable',
+      area: 'Arrastra sobre el plano para dibujar el área',
       marker: ui.toolChem ? 'Clic en el plano para colocar «' + (chem(ui.toolChem) || {}).name + '». Esc para terminar' : 'Elige la sustancia en la lista para colocar pictogramas',
       label: 'Clic en el plano para añadir un texto (p. ej. «Usted está aquí»)'
     };
     if (isProc(m)) {
       if (ui.tool === 'marker') ui.tool = 'select';
-      hints.area = 'Dibuja un rectángulo para delimitar un área; luego agrégale sus procesos en el panel derecho';
+      hints.area = 'Arrastra sobre el plano para delimitar el área; luego agrégale sus procesos en el panel derecho';
+    }
+    if (ui.tool === 'area') {
+      hints.area = {
+        rect: 'Arrastra sobre el plano para dibujar un rectángulo',
+        ellipse: 'Arrastra para dibujar un círculo/elipse · mantén Mayús para un círculo perfecto',
+        cells: 'Pinta celdas arrastrando · empezar sobre una celda pintada la borra · Enter para terminar, Esc para cancelar'
+      }[ui.areaShape];
+    }
+    var shapeBar = null;
+    if (ui.tool === 'area') {
+      shapeBar = h('div', { class: 'shape-bar', role: 'group', 'aria-label': 'Forma del área' }, SHAPES.map(function (sp) {
+        return h('button', { class: 'shape-btn', 'aria-pressed': String(ui.areaShape === sp[0]), title: sp[1], onclick: function () {
+          if (ui.areaShape === 'cells' && sp[0] !== 'cells' && ui.cellDraft && draftKeys(ui.cellDraft).length && !confirm('¿Descartar las celdas pintadas?')) return;
+          if (sp[0] !== 'cells') ui.cellDraft = null;
+          ui.areaShape = sp[0]; renderCenter();
+        } }, ic(sp[2]), sp[1]);
+      }));
+    }
+    var cellsBar = null;
+    if (ui.tool === 'area' && ui.areaShape === 'cells') {
+      var dr = cellDraft(m);
+      var editing = dr.areaId ? m.areas.filter(function (x) { return x.id === dr.areaId; })[0] : null;
+      var minS = Math.max(4, Math.round(m.bgWidth / 200)), maxS = Math.round(m.bgWidth / 12);
+      var size = h('input', { type: 'range', min: String(minS), max: String(maxS), step: '1', value: String(dr.size), title: 'Tamaño de celda' });
+      var sizeLbl = h('span', { class: 'cells-size' }, dr.size + ' px');
+      size.addEventListener('input', function () {
+        var ns = parseInt(size.value, 10);
+        resizeDraft(m, dr, ns); m.gridSize = ns; sizeLbl.textContent = ns + ' px'; scheduleSave();
+        if (canvasRefs && canvasRefs.grid) canvasRefs.grid.style.backgroundSize = ns + 'px ' + ns + 'px';
+        renderDraftCells();
+      });
+      cellsBar = h('div', { class: 'toolbar cells-bar' },
+        h('b', null, editing ? 'Editando forma de «' + editing.name + '»' : 'Nueva área por celdas'),
+        h('label', { class: 'row', style: { gap: '6px' } }, 'Tamaño de celda', size, sizeLbl),
+        h('span', { id: 'cells-count', class: 'badge blue' }, ''),
+        h('div', { class: 'grow' }),
+        h('button', { class: 'btn sm', onclick: function () { dr.set = {}; renderDraftCells(); } }, 'Limpiar'),
+        h('button', { class: 'btn sm', onclick: cancelCells }, 'Cancelar'),
+        h('button', { class: 'btn sm primary', id: 'cells-ok', onclick: confirmCells }, ic('plus'), editing ? 'Guardar forma' : 'Crear área'));
     }
     var toolbar = h('div', { class: 'toolbar' },
       toolBtn('select', 'select', 'Seleccionar', 'V'),
       toolBtn('area', 'area', 'Área', 'A'),
+      shapeBar,
       isProc(m) ? null : toolBtn('marker', 'marker', 'Pictograma', 'P'),
       isProc(m) ? null : chemSel,
       toolBtn('label', 'text', 'Texto', 'T'),
       h('span', { class: 'tool-hint' }, hints[ui.tool]));
-    var canvas = h('div', { class: 'canvas t-' + ui.tool + (isProc(m) ? ' proc' : '') });
-    center.append(toolbar, canvas);
+    var canvas = h('div', { class: 'canvas t-' + ui.tool + (isProc(m) ? ' proc' : '') + (ui.tool === 'area' ? ' sh-' + ui.areaShape : '') });
+    append(center, [toolbar, cellsBar, canvas]);
     if (!m.background) {
       var drop = h('div', { class: 'drop' }, ic('image'), h('b', null, 'Sube el plano base de «' + (m.name || 'mapa') + '»'),
         h('p', null, 'Arrastra aquí una imagen (PNG, JPG o WebP) o elige un archivo.'),
@@ -514,15 +557,24 @@
     var stage = h('div', { class: 'stage', style: { width: m.bgWidth + 'px', height: m.bgHeight + 'px' } },
       h('img', { class: 'bg', src: project.assets[m.background], alt: '', draggable: 'false' }));
     var overlay = h('div', { style: { position: 'absolute', inset: '0' } });
+    var grid = null, draftLayer = null;
+    if (ui.tool === 'area' && ui.areaShape === 'cells') {
+      var gs = cellDraft(m).size;
+      grid = h('div', { class: 'grid-overlay', style: { 'background-size': gs + 'px ' + gs + 'px' } });
+      draftLayer = h('div', { class: 'draft-layer' });
+      stage.append(grid);
+    }
     stage.append(overlay);
+    if (draftLayer) stage.append(draftLayer);
     var pct = h('div', { class: 'pct' });
     canvas.append(stage, h('div', { class: 'zoomctl' },
       h('button', { title: 'Acercar', 'aria-label': 'Acercar', onclick: function () { zoomBy(1.4); } }, ic('plus')),
       h('button', { title: 'Alejar', 'aria-label': 'Alejar', onclick: function () { zoomBy(1 / 1.4); } }, ic('minus')),
       h('button', { title: 'Ajustar a la pantalla', 'aria-label': 'Ajustar', onclick: function () { fitView(); } }, ic('fit')), pct));
-    canvasRefs = { m: m, canvas: canvas, stage: stage, overlay: overlay, pct: pct };
+    canvasRefs = { m: m, canvas: canvas, stage: stage, overlay: overlay, pct: pct, grid: grid, draftLayer: draftLayer };
     bindCanvas(canvasRefs);
     renderCanvas();
+    renderDraftCells();
     var v = ui.views[m.id];
     if (!v) requestAnimationFrame(function () { fitView(); }); else applyView();
     if (window.ResizeObserver) { canvasObserver = new ResizeObserver(function () { var vv = ui.views[m.id]; if (vv && vv.fit) fitView(); }); canvasObserver.observe(canvas); }
@@ -530,6 +582,10 @@
 
   function setTool(t) {
     if (t === 'marker' && isProc(curMap())) return;
+    if (t !== 'area' && ui.cellDraft) {
+      if (draftKeys(ui.cellDraft).length && !confirm('¿Descartar las celdas pintadas sin crear el área?')) return;
+      ui.cellDraft = null;
+    }
     ui.tool = t;
     if (t === 'marker' && !ui.toolChem) {
       var a = selArea();
@@ -584,12 +640,15 @@
     ov.innerHTML = '';
     m.areas.forEach(function (a) {
       var sel = ui.sel && ui.sel.type === 'area' && ui.sel.id === a.id;
-      var el = h('div', { class: 'ed-area' + (sel ? ' sel' : ''), 'data-kind': 'area', 'data-id': a.id,
+      var sh = shapeOf(a);
+      if (ui.cellDraft && ui.cellDraft.areaId === a.id) return; // se está editando su forma
+      var el = h('div', { class: 'ed-area shape-' + sh + (sel ? ' sel' : ''), 'data-kind': 'area', 'data-id': a.id,
         style: { left: a.x + '%', top: a.y + '%', width: a.w + '%', height: a.h + '%' } },
         h('span', { class: 'ed-area-tag' }, a.name || 'Área',
           isProc(m) ? h('span', { class: 'badge ' + (a.processes.length ? 'blue' : 'warn') }, a.processes.length ? a.processes.length + (a.processes.length === 1 ? ' proceso' : ' procesos') : 'sin procesos') : null,
           a.photos.length ? null : h('span', { class: 'badge warn' }, 'foto pend.')));
-      if (sel) ['nw', 'ne', 'sw', 'se'].forEach(function (k) { el.append(h('span', { class: 'handle ' + k, 'data-kind': 'handle', 'data-h': k })); });
+      if (sh === 'cells' && a.grid) el.prepend(cellsSvg(a.grid.size, a.grid.cells));
+      if (sel && sh !== 'cells') ['nw', 'ne', 'sw', 'se'].forEach(function (k) { el.append(h('span', { class: 'handle ' + k, 'data-kind': 'handle', 'data-h': k })); });
       ov.append(el);
     });
     m.markers.forEach(function (mk) {
@@ -606,10 +665,147 @@
     applyView();
   }
 
+  // ------------------------------------------------------------ formas de área
+  /* Formas: 'rect' (por defecto), 'ellipse' (dentro del rectángulo x,y,w,h)
+     y 'cells': celdas de una cuadrícula de grid.size px del plano, guardadas
+     como "columna,fila" (x,y,w,h es el rectángulo que las contiene). */
+  var SHAPES = [['rect', 'Rectángulo', 'shRect'], ['ellipse', 'Círculo', 'shEllipse'], ['cells', 'Cuadrícula', 'shCells']];
+  function shapeOf(a) { return a.shape === 'ellipse' || a.shape === 'cells' ? a.shape : 'rect'; }
+  function gridSizeOf(m) { return m.gridSize || Math.max(8, Math.round(m.bgWidth / 50)); }
+  function parseCell(k) { var p = k.split(','); return [parseInt(p[0], 10), parseInt(p[1], 10)]; }
+  function cellsBox(size, keys) {
+    var c0 = Infinity, r0 = Infinity, c1 = -Infinity, r1 = -Infinity;
+    keys.forEach(function (k) { var c = parseCell(k); c0 = Math.min(c0, c[0]); r0 = Math.min(r0, c[1]); c1 = Math.max(c1, c[0]); r1 = Math.max(r1, c[1]); });
+    return { x: c0 * size, y: r0 * size, w: (c1 - c0 + 1) * size, h: (r1 - r0 + 1) * size };
+  }
+  function setCells(m, a, size, keys) {
+    var b = cellsBox(size, keys);
+    a.shape = 'cells';
+    a.grid = { size: size, cells: keys.slice().sort() };
+    a.x = r3(b.x / m.bgWidth * 100); a.y = r3(b.y / m.bgHeight * 100);
+    a.w = r3(b.w / m.bgWidth * 100); a.h = r3(b.h / m.bgHeight * 100);
+  }
+  function pointInArea(m, a, x, y) {
+    if (x < a.x || x > a.x + a.w || y < a.y || y > a.y + a.h) return false;
+    var sh = shapeOf(a);
+    if (sh === 'ellipse') {
+      var nx = (x - (a.x + a.w / 2)) / (a.w / 2), ny = (y - (a.y + a.h / 2)) / (a.h / 2);
+      return nx * nx + ny * ny <= 1;
+    }
+    if (sh === 'cells' && a.grid) {
+      var sz = a.grid.size, px = x / 100 * m.bgWidth, py = y / 100 * m.bgHeight;
+      return a.grid.cells.indexOf(Math.floor(px / sz) + ',' + Math.floor(py / sz)) >= 0;
+    }
+    return true;
+  }
+  /* Celdas (de tamaño size) cuyo centro cae dentro de la forma del área. */
+  function rasterize(m, a, size) {
+    var x0 = a.x / 100 * m.bgWidth, y0 = a.y / 100 * m.bgHeight, x1 = x0 + a.w / 100 * m.bgWidth, y1 = y0 + a.h / 100 * m.bgHeight;
+    var out = [];
+    for (var c = Math.floor(x0 / size); c * size < x1; c++) for (var r = Math.floor(y0 / size); r * size < y1; r++) {
+      var cx = (c + 0.5) * size / m.bgWidth * 100, cy = (r + 0.5) * size / m.bgHeight * 100;
+      if (pointInArea(m, a, cx, cy)) out.push(c + ',' + r);
+    }
+    if (!out.length) out.push(Math.floor((x0 + x1) / 2 / size) + ',' + Math.floor((y0 + y1) / 2 / size));
+    return out;
+  }
+  /* SVG con relleno y contorno exterior de un conjunto de celdas (coordenadas relativas a su caja). */
+  function cellsSvg(size, keys, cls) {
+    var b = cellsBox(size, keys), set = {}, fill = '', edge = '';
+    keys.forEach(function (k) { set[k] = 1; });
+    keys.forEach(function (k) {
+      var c = parseCell(k), x = c[0] * size - b.x, y = c[1] * size - b.y;
+      fill += 'M' + x + ' ' + y + 'h' + size + 'v' + size + 'h' + (-size) + 'z';
+      if (!set[c[0] + ',' + (c[1] - 1)]) edge += 'M' + x + ' ' + y + 'h' + size;
+      if (!set[c[0] + ',' + (c[1] + 1)]) edge += 'M' + x + ' ' + (y + size) + 'h' + size;
+      if (!set[(c[0] - 1) + ',' + c[1]]) edge += 'M' + x + ' ' + y + 'v' + size;
+      if (!set[(c[0] + 1) + ',' + c[1]]) edge += 'M' + (x + size) + ' ' + y + 'v' + size;
+    });
+    var ns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('class', cls || 'cells-svg');
+    svg.setAttribute('viewBox', '0 0 ' + b.w + ' ' + b.h);
+    svg.setAttribute('preserveAspectRatio', 'none');
+    var pf = document.createElementNS(ns, 'path'); pf.setAttribute('d', fill); pf.setAttribute('class', 'cf');
+    var pe = document.createElementNS(ns, 'path'); pe.setAttribute('d', edge); pe.setAttribute('class', 'ce');
+    svg.append(pf, pe);
+    return svg;
+  }
+  function changeShape(m, a, sh) {
+    var cur = shapeOf(a);
+    if (sh === cur) return;
+    commit(function () {
+      if (sh === 'cells') { setCells(m, a, gridSizeOf(m), rasterize(m, a, gridSizeOf(m))); }
+      else { a.shape = sh; delete a.grid; }
+    });
+    if (sh === 'cells') toast('Área convertida a celdas. Usa «Editar celdas» para ajustar la forma.');
+  }
+
+  /* --- borrador de celdas (modo cuadrícula) --- */
+  function cellDraft(m) {
+    var d = ui.cellDraft;
+    if (!d || d.mapId !== m.id) d = ui.cellDraft = { mapId: m.id, areaId: null, size: gridSizeOf(m), set: {} };
+    return d;
+  }
+  function draftKeys(d) { return Object.keys(d.set); }
+  function startEditCells(m, a) {
+    var keys = a.grid ? a.grid.cells : rasterize(m, a, gridSizeOf(m));
+    var set = {}; keys.forEach(function (k) { set[k] = 1; });
+    ui.cellDraft = { mapId: m.id, areaId: a.id, size: a.grid ? a.grid.size : gridSizeOf(m), set: set };
+    ui.areaShape = 'cells'; ui.tool = 'area';
+    renderAll();
+  }
+  function resizeDraft(m, d, newSize) {
+    var old = d.size, set = {};
+    var keys = draftKeys(d);
+    if (keys.length) {
+      var b = cellsBox(old, keys);
+      for (var c = Math.floor(b.x / newSize); c * newSize < b.x + b.w; c++) for (var r = Math.floor(b.y / newSize); r * newSize < b.y + b.h; r++) {
+        var cx = (c + 0.5) * newSize, cy = (r + 0.5) * newSize;
+        if (d.set[Math.floor(cx / old) + ',' + Math.floor(cy / old)]) set[c + ',' + r] = 1;
+      }
+    }
+    d.set = set; d.size = newSize;
+  }
+  function confirmCells() {
+    var m = curMap(), d = ui.cellDraft;
+    if (!m || !d) return;
+    var keys = draftKeys(d);
+    if (!keys.length) { toast('Pinta al menos una celda sobre el plano', true); return; }
+    var a = d.areaId ? m.areas.filter(function (x) { return x.id === d.areaId; })[0] : null;
+    var isNew = !a;
+    commit(function () {
+      if (isNew) { a = { id: uid('area'), name: 'Nueva área ' + (m.areas.length + 1), desc: '', photos: [], chems: [], processes: [] }; m.areas.push(a); }
+      setCells(m, a, d.size, keys);
+      if (isNew) m.markers.forEach(function (mk) { if (!mk.area && pointInArea(m, a, mk.x, mk.y)) assignMarkerArea(m, mk); });
+      ui.sel = { type: 'area', id: a.id }; ui.tool = 'select'; ui.cellDraft = null;
+    });
+    toast(isNew ? 'Área creada' : 'Forma actualizada');
+    if (isNew) { var inp = right.querySelector('input'); if (inp) { inp.focus({ preventScroll: true }); inp.select(); } }
+  }
+  function cancelCells() { ui.cellDraft = null; ui.tool = 'select'; renderAll(); }
+  function renderDraftCells() {
+    if (!canvasRefs) return;
+    var layer = canvasRefs.draftLayer; if (!layer) return;
+    layer.innerHTML = '';
+    var d = ui.cellDraft, m = canvasRefs.m;
+    var keys = d ? draftKeys(d) : [];
+    if (keys.length) {
+      var b = cellsBox(d.size, keys);
+      var box = h('div', { class: 'cells-draft', style: { left: (b.x / m.bgWidth * 100) + '%', top: (b.y / m.bgHeight * 100) + '%', width: (b.w / m.bgWidth * 100) + '%', height: (b.h / m.bgHeight * 100) + '%' } });
+      box.append(cellsSvg(d.size, keys));
+      layer.append(box);
+    }
+    var cnt = document.getElementById('cells-count');
+    if (cnt) cnt.textContent = keys.length + (keys.length === 1 ? ' celda' : ' celdas');
+    var ok = document.getElementById('cells-ok');
+    if (ok) ok.disabled = !keys.length;
+  }
+
   function areaAt(m, x, y, exceptId) {
     for (var i = m.areas.length - 1; i >= 0; i--) {
       var a = m.areas[i];
-      if (a.id !== exceptId && x >= a.x && x <= a.x + a.w && y >= a.y && y <= a.y + a.h) return a;
+      if (a.id !== exceptId && pointInArea(m, a, x, y)) return a;
     }
     return null;
   }
@@ -661,11 +857,16 @@
           var ar = m.areas.filter(function (x) { return x.id === id; })[0];
           ui.sel = { type: 'area', id: id };
           var inner = m.markers.filter(function (x) { return x.area === ar.id; });
-          drag = { mode: 'area', a: ar, orig: { x: ar.x, y: ar.y }, inner: inner.map(function (x) { return { mk: x, x: x.x, y: x.y }; }), p0: p, start: startClient, snap: snapshot(), moved: false, el: target };
+          drag = { mode: 'area', a: ar, orig: { x: ar.x, y: ar.y, cells: ar.grid ? ar.grid.cells.slice() : null }, inner: inner.map(function (x) { return { mk: x, x: x.x, y: x.y }; }), p0: p, start: startClient, snap: snapshot(), moved: false, el: target };
           markSelected();
         }
+      } else if (ui.tool === 'area' && ui.areaShape === 'cells') {
+        var dr = cellDraft(m);
+        var key = cellKeyAt(p, dr.size);
+        drag = { mode: 'paint', erase: !!dr.set[key], last: p, start: startClient };
+        paintAt(p, drag);
       } else if (ui.tool === 'area') {
-        var draft = h('div', { class: 'draft' });
+        var draft = h('div', { class: 'draft' + (ui.areaShape === 'ellipse' ? ' ellipse' : '') });
         refs.overlay.append(draft);
         drag = { mode: 'draw', p0: p, draft: draft, start: startClient };
       } else {
@@ -673,8 +874,23 @@
       }
       if (drag) { canvas.setPointerCapture(e.pointerId); e.preventDefault(); }
     });
+    function cellKeyAt(pp, size) { return Math.floor(pp.x / 100 * m.bgWidth / size) + ',' + Math.floor(pp.y / 100 * m.bgHeight / size); }
+    function paintAt(pp, dg) {
+      var d = cellDraft(m), from = dg.last || pp;
+      var dx = (pp.x - from.x) / 100 * m.bgWidth, dy = (pp.y - from.y) / 100 * m.bgHeight;
+      var steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / (d.size / 2)));
+      for (var i = 0; i <= steps; i++) {
+        var q = { x: from.x + (pp.x - from.x) * i / steps, y: from.y + (pp.y - from.y) * i / steps };
+        if (q.x < 0 || q.y < 0 || q.x > 100 || q.y > 100) continue;
+        var k = cellKeyAt(q, d.size);
+        if (dg.erase) delete d.set[k]; else d.set[k] = 1;
+      }
+      dg.last = pp;
+      renderDraftCells();
+    }
     canvas.addEventListener('pointermove', function (e) {
       if (!drag) return;
+      if (drag.mode === 'paint') { paintAt(pt(e), drag); return; }
       var dist = Math.hypot(e.clientX - drag.start.x, e.clientY - drag.start.y);
       var p = pt(e), v = getView();
       if (drag.mode === 'pan') {
@@ -691,6 +907,18 @@
       } else if (drag.mode === 'label') {
         drag.lb.x = r3(clamp(drag.orig.x + dx, 0, 100)); drag.lb.y = r3(clamp(drag.orig.y + dy, 0, 100));
         drag.el.style.left = drag.lb.x + '%'; drag.el.style.top = drag.lb.y + '%';
+      } else if (drag.mode === 'area' && drag.orig.cells) {
+        var A2 = drag.a, sz = A2.grid.size;
+        var dc = Math.round(dx / 100 * m.bgWidth / sz), drr = Math.round(dy / 100 * m.bgHeight / sz);
+        A2.grid.cells = drag.orig.cells.map(function (k) { var c = parseCell(k); return (c[0] + dc) + ',' + (c[1] + drr); });
+        setCells(m, A2, sz, A2.grid.cells);
+        var rdx2 = A2.x - drag.orig.x, rdy2 = A2.y - drag.orig.y;
+        drag.inner.forEach(function (it) { it.mk.x = r3(it.x + rdx2); it.mk.y = r3(it.y + rdy2); });
+        drag.el.style.left = A2.x + '%'; drag.el.style.top = A2.y + '%';
+        drag.inner.forEach(function (it) {
+          var el2 = refs.overlay.querySelector('.ed-mk[data-id="' + it.mk.id + '"]');
+          if (el2) { el2.style.left = it.mk.x + '%'; el2.style.top = it.mk.y + '%'; }
+        });
       } else if (drag.mode === 'area') {
         var a = drag.a;
         a.x = r3(clamp(drag.orig.x + dx, 0, 100 - a.w)); a.y = r3(clamp(drag.orig.y + dy, 0, 100 - a.h));
@@ -711,8 +939,15 @@
         var el = refs.overlay.querySelector('.ed-area[data-id="' + A.id + '"]');
         if (el) { el.style.left = A.x + '%'; el.style.top = A.y + '%'; el.style.width = A.w + '%'; el.style.height = A.h + '%'; }
       } else if (drag.mode === 'draw') {
-        var x0d = Math.min(drag.p0.x, p.x), y0d = Math.min(drag.p0.y, p.y);
-        drag.rect = { x: clamp(x0d, 0, 100), y: clamp(y0d, 0, 100), w: Math.abs(p.x - drag.p0.x), h: Math.abs(p.y - drag.p0.y) };
+        var px2 = p.x, py2 = p.y;
+        if (ui.areaShape === 'ellipse' && e.shiftKey) {
+          // circulo perfecto: mismo tamaño en pixeles del plano en ambos ejes
+          var wpx = Math.abs(p.x - drag.p0.x) / 100 * m.bgWidth, hpx = Math.abs(p.y - drag.p0.y) / 100 * m.bgHeight, side = Math.max(wpx, hpx);
+          px2 = drag.p0.x + Math.sign(p.x - drag.p0.x || 1) * side / m.bgWidth * 100;
+          py2 = drag.p0.y + Math.sign(p.y - drag.p0.y || 1) * side / m.bgHeight * 100;
+        }
+        var x0d = Math.min(drag.p0.x, px2), y0d = Math.min(drag.p0.y, py2);
+        drag.rect = { x: clamp(x0d, 0, 100), y: clamp(y0d, 0, 100), w: Math.abs(px2 - drag.p0.x), h: Math.abs(py2 - drag.p0.y) };
         drag.draft.style.left = drag.rect.x + '%'; drag.draft.style.top = drag.rect.y + '%';
         drag.draft.style.width = drag.rect.w + '%'; drag.draft.style.height = drag.rect.h + '%';
       }
@@ -726,14 +961,16 @@
         if (!d.panned && d.clickDeselect && ui.sel) { ui.sel = null; renderAll(); }
         return;
       }
+      if (d.mode === 'paint') return;
       if (d.mode === 'draw') {
         d.draft.remove();
         if (d.rect && d.rect.w > 0.6 && d.rect.h > 0.6) {
           commit(function () {
             var a = { id: uid('area'), name: 'Nueva área ' + (m.areas.length + 1), desc: '', x: r3(d.rect.x), y: r3(d.rect.y),
               w: r3(Math.min(d.rect.w, 100 - d.rect.x)), h: r3(Math.min(d.rect.h, 100 - d.rect.y)), photos: [], chems: [], processes: [] };
+            if (ui.areaShape === 'ellipse') a.shape = 'ellipse';
             m.areas.push(a);
-            m.markers.forEach(function (mk) { if (!mk.area && mk.x >= a.x && mk.x <= a.x + a.w && mk.y >= a.y && mk.y <= a.y + a.h) assignMarkerArea(m, mk); });
+            m.markers.forEach(function (mk) { if (!mk.area && pointInArea(m, a, mk.x, mk.y)) assignMarkerArea(m, mk); });
             ui.sel = { type: 'area', id: a.id }; ui.tool = 'select';
           });
           var inp = right.querySelector('input'); if (inp) { inp.focus({ preventScroll: true }); inp.select(); }
@@ -943,6 +1180,13 @@
       inspHead(h('span', { class: 'ed-logo', style: { width: '30px', height: '30px' }, html: ICON.area }), a.name || 'Área', isProc(m) ? 'Área del mapa de procesos' : 'Área clicable', deselect),
       h('div', { class: 'sec' }, field('Nombre del área', name), field('Descripción (opcional)', desc),
         h('p', { class: 'help', style: { margin: 0 } }, 'También puedes renombrar con ✎ en la lista de áreas o con doble clic sobre el área en el plano.')),
+      h('div', { class: 'sec' }, h('h4', null, 'Forma'),
+        h('div', { class: 'shape-bar block' }, SHAPES.map(function (sp) {
+          return h('button', { class: 'shape-btn', 'aria-pressed': String(shapeOf(a) === sp[0]), title: sp[1], onclick: function () { changeShape(m, a, sp[0]); } }, ic(sp[2]), sp[1]);
+        })),
+        shapeOf(a) === 'cells'
+          ? h('button', { class: 'btn block', style: { 'margin-top': '8px' }, onclick: function () { startEditCells(m, a); } }, ic('shCells'), 'Editar celdas')
+          : h('p', { class: 'help', style: { margin: '8px 0 0' } }, 'Ajusta el tamaño con las esquinas. «Cuadrícula» convierte el área en celdas para formas irregulares.')),
       isProc(m) ? processesSection(m, a) : null,
       h('div', { class: 'sec' }, h('h4', null, h('span', null, 'Fotos del área'), a.photos.length ? h('span', { class: 'badge ok' }, a.photos.length) : h('span', { class: 'badge warn' }, 'Pendiente')),
         a.photos.length ? photos : h('div', { class: 'pending-box' }, ic('camera'), 'Foto pendiente. En el mapa exportado se mostrará «Foto pendiente» hasta que la agregues.'),
@@ -1640,6 +1884,8 @@
     if (mod && (e.key.toLowerCase() === 'y' || (e.key.toLowerCase() === 'z' && e.shiftKey))) { if (isTyping(e)) return; e.preventDefault(); redo(); return; }
     if (isTyping(e) || mod) return;
     if (e.key === 'Delete' || e.key === 'Backspace') { if (ui.sel && ui.view === 'map') { e.preventDefault(); deleteSelection(); } return; }
+    if (e.key === 'Enter' && ui.tool === 'area' && ui.areaShape === 'cells' && ui.cellDraft) { e.preventDefault(); confirmCells(); return; }
+    if (e.key === 'Escape' && ui.tool === 'area' && ui.areaShape === 'cells' && ui.cellDraft) { cancelCells(); return; }
     if (e.key === 'Escape') { if (ui.tool !== 'select') setTool('select'); else if (ui.sel) deselect(); return; }
     if (ui.view !== 'map' || !curMap()) return;
     var k = e.key.toLowerCase();

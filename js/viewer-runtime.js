@@ -169,6 +169,20 @@ function MapaViewerRuntime(DATA, ROOT, OPTIONS) {
 .mv-procmap .mv-area-tag{background:#1565c0}
 .mv-procmap .mv-area-tag i{background:#fff;color:#1565c0}
 .mv-procmap .mv-area:hover .mv-area-tag{background:var(--head)}
+/* --- formas de área --- */
+.mv-sh-ellipse{border-radius:50%!important}
+.mv-area.mv-sh-cells{border:0!important;background:none!important;pointer-events:none}
+.mv-area.mv-sh-cells .mv-area-tag{pointer-events:auto}
+.mv-cells{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.mv-cells .cf{fill:rgba(242,201,76,.12);pointer-events:all;cursor:pointer;transition:fill .15s}
+.mv-cells .ce{fill:none;stroke:var(--accent);stroke-width:calc(var(--inv,1)*2px);stroke-linecap:square}
+.mv-area.mv-sh-cells:hover .cf{fill:rgba(242,201,76,.3)}
+.mv-procmap .mv-cells .cf{fill:rgba(21,101,192,.13)}
+.mv-procmap .mv-cells .ce{stroke:#1565c0;stroke-width:calc(var(--inv,1)*2.5px)}
+.mv-procmap .mv-area.mv-sh-cells:hover .cf{fill:rgba(21,101,192,.28)}
+.mv-minimap .mv-mm-cells{border:0;background:none;box-shadow:none}
+.mv-minimap .mv-mm-cells .cf{fill:rgba(198,40,40,.25)}
+.mv-minimap .mv-mm-cells .ce{fill:none;stroke:var(--danger);stroke-width:2;vector-effect:non-scaling-stroke}
 .mv-pic{flex:none;width:34px;height:34px;border-radius:10px;background:#e8f1fc;color:#1565c0;display:grid;place-items:center}
 .mv-pic svg{width:20px;height:20px}
 .mv-pic.mv-sm{width:26px;height:26px;border-radius:8px}
@@ -292,6 +306,25 @@ function MapaViewerRuntime(DATA, ROOT, OPTIONS) {
     (m.areas || []).forEach(function (a) { (a.processes || []).forEach(function (p) { out.push({ p: p, a: a }); }); });
     return out;
   }
+  /* SVG de un área por celdas (cuadrícula): relleno y contorno exterior. */
+  function cellsSvg(a, cls) {
+    var size = a.grid.size, keys = a.grid.cells, set = {};
+    var c0 = Infinity, r0 = Infinity, c1 = -Infinity, r1 = -Infinity;
+    var cells = keys.map(function (k) { var p = k.split(','); var c = [parseInt(p[0], 10), parseInt(p[1], 10)]; set[k] = 1;
+      c0 = Math.min(c0, c[0]); r0 = Math.min(r0, c[1]); c1 = Math.max(c1, c[0]); r1 = Math.max(r1, c[1]); return c; });
+    var bx = c0 * size, by = r0 * size, fill = '', edge = '';
+    cells.forEach(function (c) {
+      var x = c[0] * size - bx, y = c[1] * size - by;
+      fill += 'M' + x + ' ' + y + 'h' + size + 'v' + size + 'h' + (-size) + 'z';
+      if (!set[c[0] + ',' + (c[1] - 1)]) edge += 'M' + x + ' ' + y + 'h' + size;
+      if (!set[c[0] + ',' + (c[1] + 1)]) edge += 'M' + x + ' ' + (y + size) + 'h' + size;
+      if (!set[(c[0] - 1) + ',' + c[1]]) edge += 'M' + x + ' ' + y + 'v' + size;
+      if (!set[(c[0] + 1) + ',' + c[1]]) edge += 'M' + (x + size) + ' ' + y + 'v' + size;
+    });
+    var w = (c1 - c0 + 1) * size, hgt = (r1 - r0 + 1) * size;
+    return h('span', { html: '<svg class="' + (cls || 'mv-cells') + '" viewBox="0 0 ' + w + ' ' + hgt + '" preserveAspectRatio="none"><path class="cf" d="' + fill + '"/><path class="ce" d="' + edge + '"/></svg>', style: { display: 'contents' } });
+  }
+  function shapeClass(a) { return a.shape === 'ellipse' ? ' mv-sh-ellipse' : (a.shape === 'cells' && a.grid && a.grid.cells.length ? ' mv-sh-cells' : ''); }
   function stepsLabel(n) { return n + (n === 1 ? ' paso' : ' pasos'); }
 
   var CHEMS = {};
@@ -512,12 +545,13 @@ function MapaViewerRuntime(DATA, ROOT, OPTIONS) {
 
     (m.areas || []).forEach(function (a) {
       var btn = h('button', {
-        type: 'button', class: 'mv-area', 'data-area': a.id, 'aria-label': 'Abrir área: ' + a.name,
+        type: 'button', class: 'mv-area' + shapeClass(a), 'data-area': a.id, 'aria-label': 'Abrir área: ' + a.name,
         title: a.name,
         style: { left: a.x + '%', top: a.y + '%', width: a.w + '%', height: a.h + '%', '--aw': (a.w / 100 * W).toFixed(1) + 'px' },
         onclick: function () { go({ area: a.id, ficha: null, proc: null }); }
       }, h('span', { class: 'mv-area-tag' }, h('i', { html: ICONS.enter }), h('span', null, a.name),
         isProc(m) && (a.processes || []).length ? h('em', { class: 'mv-cnt', title: a.processes.length + ' procesos' }, String(a.processes.length)) : null));
+      if (shapeClass(a) === ' mv-sh-cells') btn.prepend(cellsSvg(a));
       content.appendChild(btn);
     });
     (m.markers || []).forEach(function (mk) {
@@ -732,7 +766,8 @@ function MapaViewerRuntime(DATA, ROOT, OPTIONS) {
 
     var mini = h('div', { class: 'mv-minimap', title: 'Ver en el mapa', onclick: function () { go({ area: null, ficha: null, proc: null }); setTimeout(function () { var v = views[m.id]; v.pz.focus(a.x / 100 * v.W, a.y / 100 * v.H, a.w / 100 * v.W, a.h / 100 * v.H, true); }, 30); } },
       h('img', { src: asset(m.background), alt: '' }),
-      h('div', { style: { left: a.x + '%', top: a.y + '%', width: a.w + '%', height: a.h + '%' } }));
+      h('div', { class: shapeClass(a) === ' mv-sh-cells' ? 'mv-mm-cells' : shapeClass(a).trim() || null, style: { left: a.x + '%', top: a.y + '%', width: a.w + '%', height: a.h + '%' } },
+        shapeClass(a) === ' mv-sh-cells' ? cellsSvg(a, 'mv-cells') : null));
 
     areaView = h('section', { class: 'mv-area-view', 'data-key': m.id + '/' + a.id, 'aria-label': a.name },
       h('div', { class: 'mv-av-head' },

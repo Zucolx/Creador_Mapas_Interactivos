@@ -381,3 +381,38 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent-2); 
 .canvas.proc .ed-area-tag { background: var(--blue); font-size: 13px; padding: 3px 9px; }
 .canvas.proc .ed-area.sel .ed-area-tag { background: var(--head); }
 .canvas.proc .ed-area-tag .badge.blue { background: #fff; }
+
+/* ---------- formas de área ---------- */
+.shape-bar { display: inline-flex; border: 1px solid var(--line-2); border-radius: 9px; overflow: hidden; background: #fff; }
+.shape-bar.block { display: flex; }
+.shape-btn { border: 0; background: #fff; padding: 5px 9px; display: inline-flex; gap: 5px; align-items: center; font-size: 12.5px; font-weight: 600; }
+.shape-btn + .shape-btn { border-left: 1px solid var(--line); }
+.shape-bar.block .shape-btn { flex: 1; justify-content: center; padding: 7px 6px; }
+.shape-btn svg { width: 16px; height: 16px; }
+.shape-btn[aria-pressed=true] { background: var(--blue); color: #fff; }
+.cells-bar { background: #e8f1fc; border-bottom: 1px solid #c9dcf5; gap: 12px; }
+.cells-bar input[type=range] { width: 150px; }
+.cells-size { font-variant-numeric: tabular-nums; min-width: 52px; font-size: 12.5px; color: var(--muted); }
+.canvas.sh-cells { cursor: cell; }
+.ed-area.shape-ellipse, .draft.ellipse { border-radius: 50%; }
+.ed-area.shape-cells { border: 0; background: none; pointer-events: none; }
+.cells-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.cells-svg .cf { fill: rgba(242,201,76,.16); }
+.cells-svg .ce { fill: none; stroke: var(--accent); stroke-width: calc(var(--inv) * 2px); stroke-linecap: square; }
+.ed-area.shape-cells .cf { pointer-events: all; cursor: move; }
+.canvas:not(.t-select) .ed-area.shape-cells .cf { cursor: inherit; }
+.ed-area.shape-cells:hover .cf { fill: rgba(242,201,76,.28); }
+.ed-area.shape-cells.sel .cf { fill: rgba(21,101,192,.14); }
+.ed-area.shape-cells.sel .ce { stroke: var(--blue); }
+.canvas.proc .cells-svg .cf { fill: rgba(21,101,192,.14); }
+.canvas.proc .cells-svg .ce { stroke: var(--blue); stroke-width: calc(var(--inv) * 2.5px); }
+.canvas.proc .ed-area.shape-cells:hover .cf { fill: rgba(21,101,192,.24); }
+.canvas.proc .ed-area.shape-cells.sel .cf { fill: rgba(242,201,76,.30); }
+.canvas.proc .ed-area.shape-cells.sel .ce { stroke: var(--accent); }
+.grid-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background-image: linear-gradient(to right, rgba(21,101,192,.32) calc(var(--inv) * 1px), transparent calc(var(--inv) * 1px)),
+                    linear-gradient(to bottom, rgba(21,101,192,.32) calc(var(--inv) * 1px), transparent calc(var(--inv) * 1px)); }
+.draft-layer { position: absolute; inset: 0; pointer-events: none; z-index: 6; }
+.cells-draft { position: absolute; }
+.cells-draft .cf { fill: rgba(21,101,192,.38); }
+.cells-draft .ce { stroke: #0d47a1; stroke-width: calc(var(--inv) * 2.5px); }

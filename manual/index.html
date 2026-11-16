@@ -93,7 +93,7 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
     <li><a href="#pantalla">La pantalla del editor</a></li>
     <li><a href="#mapas">Mapas y planos</a></li>
     <li><a href="#areas">Áreas</a>
-      <ol><li><a href="#area-crear">Crear y ajustar</a></li><li><a href="#area-fotos">Fotos</a></li><li><a href="#area-pines">Químicos en la foto</a></li></ol></li>
+      <ol><li><a href="#area-crear">Crear y ajustar</a></li><li><a href="#area-formas">Formas: rectángulo, círculo y cuadrícula</a></li><li><a href="#area-fotos">Fotos</a></li><li><a href="#area-pines">Químicos en la foto</a></li></ol></li>
     <li><a href="#pictogramas">Pictogramas en el plano</a></li>
     <li><a href="#textos">Textos</a></li>
     <li><a href="#procesos">Mapas de procesos</a>
@@ -225,6 +225,23 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
   <li><b>Eliminar</b>: botón <span class="ui">Eliminar área</span> o tecla <kbd>Supr</kbd>. Se eliminan también sus pictogramas. Si fue un error: <kbd>Ctrl</kbd>+<kbd>Z</kbd>.</li>
 </ul>
 <figure><img src="img/ed-area.webp" alt="Área seleccionada en el editor" loading="lazy"><figcaption>Área «Cuarto de materia prima L1» seleccionada: contorno azul con esquinas para redimensionar.</figcaption></figure>
+
+<h3 id="area-formas">Formas: rectángulo, círculo y cuadrícula</h3>
+<p>Al elegir la herramienta <span class="ui">Área</span> aparece el selector de forma:</p>
+<table>
+  <tr><th>Forma</th><th>Cómo se dibuja</th></tr>
+  <tr><td><b>Rectángulo</b></td><td>Arrastra sobre el plano. Se ajusta con las esquinas.</td></tr>
+  <tr><td><b>Círculo</b></td><td>Arrastra para dibujar una elipse. Mantén <kbd>Mayús</kbd> para un círculo perfecto. Se ajusta con las esquinas.</td></tr>
+  <tr><td><b>Cuadrícula</b></td><td>Para formas irregulares (en L, en U, pasillos…). Aparece una cuadrícula sobre el plano y una barra azul con el <b>tamaño de celda</b> (ajustable con el deslizador). Arrastra para <b>pintar</b> celdas; si empiezas a arrastrar sobre una celda ya pintada, <b>borra</b>. Pulsa <span class="ui">Crear área</span> o <kbd>Enter</kbd> para terminar; <span class="ui">Limpiar</span> borra todo y <span class="ui">Cancelar</span> o <kbd>Esc</kbd> descarta.</td></tr>
+</table>
+<figure><img src="img/ed-cuadricula.webp" alt="Pintando un área en modo cuadrícula" loading="lazy"><figcaption>Modo cuadrícula: celdas pintadas en azul formando una L; arriba, el tamaño de celda y el botón «Crear área». A la izquierda se ve un área circular.</figcaption></figure>
+<ul>
+  <li><b>Cambiar la forma de un área existente</b>: selecciónala y, en el panel derecho, sección <b>Forma</b>, elige Rectángulo, Círculo o Cuadrícula. Al pasar a cuadrícula, el área se convierte en celdas con su forma actual.</li>
+  <li><b>Editar las celdas</b> de un área de cuadrícula: botón <span class="ui">Editar celdas</span>, pinta o borra y pulsa <span class="ui">Guardar forma</span>. Cambiar el tamaño de celda mientras editas conserva la forma lo mejor posible.</li>
+  <li>Un área de cuadrícula se mueve arrastrándola y queda alineada con la cuadrícula.</li>
+  <li>En el mapa exportado cada área se ve con su forma real y solo responde al tocar <b>dentro</b> de la figura. Los pictogramas se asocian al área solo si caen dentro de ella.</li>
+</ul>
+<figure class="half"><img src="img/vi-formas.webp" alt="Áreas circular y en L en el mapa exportado" loading="lazy"><figcaption>En el mapa exportado: un área circular y otra en forma de L.</figcaption></figure>
 
 <h3 id="area-fotos">5.2 Fotos del área</h3>
 <div class="duo">
@@ -508,7 +525,9 @@ footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
   <tr><td><kbd>A</kbd></td><td>Herramienta Área</td></tr>
   <tr><td><kbd>P</kbd></td><td>Herramienta Pictograma (solo en mapas de químicos)</td></tr>
   <tr><td><kbd>T</kbd></td><td>Herramienta Texto</td></tr>
-  <tr><td><kbd>Esc</kbd></td><td>Volver a Seleccionar / quitar la selección / cerrar diálogos</td></tr>
+  <tr><td><kbd>Esc</kbd></td><td>Volver a Seleccionar / quitar la selección / cerrar diálogos / descartar las celdas pintadas</td></tr>
+  <tr><td><kbd>Enter</kbd></td><td>En modo cuadrícula: crear el área o guardar la forma</td></tr>
+  <tr><td><kbd>Mayús</kbd> + arrastrar</td><td>Con la forma Círculo: círculo perfecto</td></tr>
   <tr><td><kbd>Supr</kbd> o <kbd>Retroceso</kbd></td><td>Eliminar lo seleccionado</td></tr>
   <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>Deshacer</td></tr>
   <tr><td><kbd>Ctrl</kbd>+<kbd>Y</kbd> o <kbd>Ctrl</kbd>+<kbd>Mayús</kbd>+<kbd>Z</kbd></td><td>Rehacer</td></tr>
